@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.border-finance-blue {
+  border-color: #38BDF8;
+}
+.border-finance-green {
+  border-color: #4ADE80;
+}
+.border-finance-red {
+  border-color: #F87171;
+}
+.border-finance-purple {
+  border-color: #A78BFA;
+}
+.bg-finance-blue-light {
+  background-color: #E0F7FA;
+}
+.text-finance-blue-dark {
+  color: #0288D1;
+}
+/* Add similar styles for green, red, purple */
