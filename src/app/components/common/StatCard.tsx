@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/app/lib/utils';
 
@@ -12,24 +11,41 @@ interface StatCardProps {
   };
   className?: string;
   iconClassName?: string;
+  style?: React.CSSProperties;
+  iconStyle?: React.CSSProperties;
 }
 
-const StatCard = ({ title, value, icon, trend, className, iconClassName }: StatCardProps) => {
+const StatCard = ({ 
+  title, 
+  value, 
+  icon, 
+  trend, 
+  className, 
+  iconClassName, 
+  style, 
+  iconStyle 
+}: StatCardProps) => {
   return (
-    <div className={cn('stat-card animate-fade-in-up', className)}>
+    <div className={`stat-card animate-fade-in-up ${className || ''}`} style={style}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        {icon && <div className={cn('p-2 rounded-lg', iconClassName)}>{icon}</div>}
+        {icon && (
+          <div 
+            className={`p-2 rounded-lg ${iconClassName || ''}`} 
+            style={iconStyle}
+          >
+            {icon}
+          </div>
+        )}
       </div>
       <div className="mt-1">
         <div className="text-2xl font-semibold">{value}</div>
         {trend && (
           <div className="flex items-center mt-1">
             <span
-              className={cn(
-                'text-xs font-medium flex items-center',
-                trend.isPositive ? 'text-finance-green-dark' : 'text-finance-red-dark'
-              )}
+              className={`text-xs font-medium flex items-center ${
+                trend.isPositive ? 'text-[#16A34A]' : 'text-[#DC2626]'
+              }`}
             >
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
             </span>

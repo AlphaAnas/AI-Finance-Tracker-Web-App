@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="flex">
-      <Sidebar />
+      <Sidebar />  {/*Display a sidebar on every page */}
       <div className="ml-64 flex-1 min-h-screen">
         {children}
       </div>

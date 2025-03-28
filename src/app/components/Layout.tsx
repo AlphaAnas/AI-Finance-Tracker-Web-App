@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import Sidebar from './Sidebar';
 // Import your navigation component here
 // import Navigation from './Navigation';
 
@@ -9,7 +10,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navigation /> */}
+      <Sidebar/>
       <main className="container mx-auto py-4">
         {children}
       </main>
