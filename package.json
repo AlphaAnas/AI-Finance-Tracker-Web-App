@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "clsx": "^2.1.1",
     "lucide-react": "^0.484.0",
     "next": "15.2.2",
@@ -16,13 +17,22 @@
     "react-dom": "^19.0.0",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2"
+=======
+    "next": "15.2.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.4.0"
+>>>>>>> Stashed changes
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+<<<<<<< Updated upstream
     "@types/recharts": "^1.8.29",
+=======
+>>>>>>> Stashed changes
     "tailwindcss": "^4",
     "typescript": "^5"
   }
