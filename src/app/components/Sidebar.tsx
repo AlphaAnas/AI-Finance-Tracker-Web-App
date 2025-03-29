@@ -11,7 +11,7 @@ const menuItems = [
 
 export default function Sidebar() {
   return (
-    <div className="h-screen w-64 bg-gray-900 text-white p-5 flex flex-col">
+    <div className="h-screen  bg-gray-900 text-white p-5 flex flex-col">
       <h2 className="text-2xl font-bold mb-6">MaaliMunshi</h2>
       {/* /* flex is basically a CSS layout model that allows
        items to align and distribute space within a container efficiently, even when their sizes are dynamic or unknown. */} 

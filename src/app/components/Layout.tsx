@@ -8,8 +8,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-screen">
-      {/* Sidebar spans the full height */}
-      <Sidebar />
+
       <div className="flex-1 flex flex-col bg-gray-100">
         {/* Navbar */}
         <header className="bg-white shadow p-4 flex justify-between items-center">
