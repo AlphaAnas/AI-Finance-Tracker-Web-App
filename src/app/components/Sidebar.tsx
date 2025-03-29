@@ -1,72 +1,30 @@
-"use client"
+import Link from "next/link";
+import { FaTachometerAlt, FaExchangeAlt, FaWallet, FaChartBar, FaCog } from "react-icons/fa";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/app/lib/utils';
-
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: '📊' },
-  { href: '/statistics', label: 'Statistics', icon: '📈' },
-  { href: '/transactions', label: 'Transactions', icon: '💸' },
-  { href: '/budgets', label: 'Budget', icon: '📋' },
-  { href: '/analysis', label: 'Analysis', icon: '🔍' },
+const menuItems = [
+  { name: "Dashboard", icon: <FaTachometerAlt />, path: "/dashboard" },
+  { name: "Transactions", icon: <FaExchangeAlt />, path: "/transactions" },
+  { name: "Budgets", icon: <FaWallet />, path: "/budgets" },
+  { name: "Reports", icon: <FaChartBar />, path: "/reports" },
+  { name: "Settings", icon: <FaCog />, path: "/settings" },
 ];
 
-const accountItems = [
-  { href: '/account', label: 'My Account', icon: '👤' },
-];
-
-const Sidebar = () => {
-  const pathname = usePathname();
-
+export default function Sidebar() {
   return (
-    <div className="w-64 bg-gray-50 border-r border-gray-200 h-screen p-4 fixed left-0 top-0">
-      <div className="mb-8">
-        <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
-          Logo Here
-        </div>
-      </div>
-      <nav>
-        <h3 className="text-sm font-semibold text-gray-500 mb-2">GENERAL PREFERENCES</h3>
-        <ul className="space-y-2">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link 
-                href={item.href}
-                className={cn(
-                  "flex items-center p-2 rounded-md",
-                  pathname === item.href 
-                    ? "bg-blue-100 text-blue-600" 
-                    : "text-gray-600 hover:bg-gray-100"
-                )}
-              >
-                <span className="mr-2">{item.icon}</span> {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <h3 className="text-sm font-semibold text-gray-500 mt-6 mb-2">OTHER PREFERENCES</h3>
-        <ul>
-          {accountItems.map((item) => (
-            <li key={item.href}>
-              <Link 
-                href={item.href}
-                className={cn(
-                  "flex items-center p-2 rounded-md",
-                  pathname === item.href 
-                    ? "bg-blue-100 text-blue-600" 
-                    : "text-gray-600 hover:bg-gray-100"
-                )}
-              >
-                <span className="mr-2">{item.icon}</span> {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+    <div className="h-screen w-64 bg-gray-900 text-white p-5 flex flex-col">
+      <h2 className="text-2xl font-bold mb-6">MaaliMunshi</h2>
+      {/* /* flex is basically a CSS layout model that allows
+       items to align and distribute space within a container efficiently, even when their sizes are dynamic or unknown. */} 
+      <nav className="flex-1"> 
+        {menuItems.map((item) => (
+          <Link key={item.name} href={item.path}>
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 cursor-pointer">
+              <span className="text-xl">{item.icon}</span>
+              <span>{item.name}</span>
+            </div>
+          </Link>
+        ))}
       </nav>
     </div>
   );
-};
-
-export default Sidebar;
+}

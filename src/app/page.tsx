@@ -1,11 +1,10 @@
 import React from 'react';
-import Layout from '@/app/components/Layout';
-import Dashboard from '@/app/components/Dashboard';
+import {redirect} from 'next/navigation';
 
 export default function HomePage() {
-  return (
-    <Layout>
-      <Dashboard />
-    </Layout>
-  );
+
+  // Redirect to the dashboard page
+  // when the user accesses the root URL
+  redirect("/dashboard");
+ 
 }
