@@ -69,7 +69,7 @@ export default function Home() {
 
         {/* 🔀 Random Navigation Button */}
         <button
-          onClick={() => window.location.href = "/random"}
+          onClick={() => window.location.href = "/dashboard"}
           className="mt-6 bg-white text-blue-700 font-bold px-6 py-2 rounded border border-blue-700 hover:bg-blue-100 transition"
         >
           Go to Random Page →
