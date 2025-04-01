@@ -1,9 +1,9 @@
-import Layout from "@/app/components/Layout";
-import Card from "@/app/components/common/Card";
-import BudgetChart from "@/app/components/BudgetChart";
-import ExpensePieChart from "@/app/components/ExpensePieChart";
-import BudgetOverview from "@/app/components/BudgetOverview";
-import RecentTransactions from "@/app/components/RecentTransactions";
+import Layout from "@/components/Layout";
+import Card from "@/components/common/Card";
+import BudgetChart from "@/components/BudgetChart";
+import ExpensePieChart from "@/components/ExpensePieChart";
+import BudgetOverview from "@/components/BudgetOverview";
+import RecentTransactions from "@/components/RecentTransactions";
 import { FaWallet, FaDollarSign, FaChartLine, FaPiggyBank } from "react-icons/fa";
 
 export default function DashboardPage() {
