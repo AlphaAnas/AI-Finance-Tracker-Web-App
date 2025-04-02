@@ -15,8 +15,8 @@ export default function Home() {
       <div className="flex-1 bg-white flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
           <h1 className="text-4xl font-bold text-[#3b82f6] mb-1">Expense</h1>
-          <p className="text-4xl font-bold text-[#3b82f6] mb-4">TRACKER</p>
-          <img src="/logo.png" alt="Logo" className="h-32" />
+          <p className="text-4xl font-bold text-[#3b82f6] mb-4">Tracker</p>
+          <img src="/logo.png" alt="Logo" className="h-60" />
         </div>
       </div>
 
