@@ -16,10 +16,10 @@ const COLORS = ["#6b5b95", "#feb236", "#d64161", "#ff7b25", "#87bdd8", "#b5e7a0"
 export default function ExpensePieChart() {
   return (
     <div className="bg-white p-5 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold mb-3 text-black">Expense Categories</h3>
+      <h3 className="text-lg font-semibold mb-3">Expense Categories</h3>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
-          <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={105}>
+          <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}

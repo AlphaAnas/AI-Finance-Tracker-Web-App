@@ -14,7 +14,7 @@ const data = [
 export default function BudgetChart() {
   return (
     <div className="bg-white p-5 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold text-black mb-3">Monthly Spending</h3>
+      <h3 className="text-lg font-semibold mb-3">Monthly Spending</h3>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <XAxis dataKey="month" />

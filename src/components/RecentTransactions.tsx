@@ -10,14 +10,14 @@ export default function RecentTransactions() {
   return (
     <div className="bg-white p-5 rounded-lg shadow-md">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold  text-black">Recent Transactions</h2>
+        <h2 className="text-lg font-semibold">Recent Transactions</h2>
         <a href="#" className="text-blue-600 hover:underline">View all →</a>
       </div>
       <div className="mt-4">
         {transactions.map((tx, index) => (
           <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-3">
             <div>
-              <h3 className="text-md font-medium  text-gray-800">{tx.title}</h3>
+              <h3 className="text-md font-medium">{tx.title}</h3>
               <p className="text-gray-500 text-sm">{tx.date} • <FaCheckCircle className="inline text-green-500" /> {tx.status}</p>
             </div>
             <div className="text-right">
