@@ -1,6 +1,39 @@
 'use client';
 
+import { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from 'src/app/firebase.js';
+import toast from 'react-hot-toast';
+
 export default function Signup() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailExists, setEmailExists] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async () => {
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("User created:", userCredential.user);
+      toast.success("Account created! Redirecting to login...");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
+    } catch (error: any) { // ✅ FIXED here
+      if (error.code === "auth/email-already-in-use") {
+        setEmailExists(true);
+        toast.error("Email exists already, Try logging in?");
+      } else {
+        toast.error("Signup failed. Please try again.");
+        console.error("Signup error:", error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <div className="flex min-h-screen">
       {/* Logo Section */}
@@ -49,16 +82,31 @@ export default function Signup() {
           <input
             type="email"
             placeholder="Mobile number or email"
+            value={email}
+            onChange={e => {
+              setEmail(e.target.value);
+              setEmailExists(false);
+            }}
             className="bg-white text-black p-3 w-full rounded border mb-3"
           />
           <input
             type="password"
             placeholder="New password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             className="bg-white text-black p-3 w-full rounded border mb-5"
           />
 
-          <button className="bg-green-600 hover:bg-green-700 p-3 rounded w-full text-white font-semibold mb-4">
-            Sign Up
+          <button
+            onClick={handleSignup}
+            disabled={emailExists || loading}
+            className={`p-3 rounded w-full font-semibold mb-4 ${
+              emailExists || loading
+                ? 'bg-gray-400 cursor-not-allowed text-white'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
+          >
+            {loading ? "Creating Account..." : "Sign Up"}
           </button>
 
           <p className="text-white/70 text-center text-sm">

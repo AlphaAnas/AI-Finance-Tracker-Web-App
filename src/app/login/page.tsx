@@ -1,14 +1,46 @@
 'use client';
 
-function signInWithGoogle() {
-  alert("Google Sign-in coming soon...");
-}
+import { useState } from 'react';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from 'src/app/firebase.js';
+import toast from 'react-hot-toast';
 
-function signInWithFacebook() {
-  alert("Facebook Sign-in coming soon...");
+const provider = new GoogleAuthProvider();
+
+function signInWithGoogle() {
+  signInWithPopup(auth, provider)
+    .then(result => {
+      toast.success("Google login successful!");
+      console.log("Google signed in:", result.user);
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
+    })
+    .catch(error => {
+      toast.error("Google login failed.");
+      console.error("Google login error:", error.message);
+    });
 }
 
 export default function Home() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then(userCredential => {
+        toast.success("Login successful!");
+        console.log("Logged in:", userCredential.user);
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
+      })
+      .catch(error => {
+        toast.error("Invalid credentials. Try again.");
+        console.error("Login error:", error.message);
+      });
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Logo Section */}
@@ -28,16 +60,22 @@ export default function Home() {
         <input
           type="email"
           placeholder="example@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
           className="mb-3 p-3 rounded w-full text-black bg-white border"
         />
         <input
           type="password"
           placeholder="at least 8 characters"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
           className="mb-2 p-3 rounded w-full text-black bg-white border"
         />
         <a href="#" className="text-sm mb-4 text-right text-white/70">Forgot password?</a>
 
-        <button className="bg-blue-800 hover:bg-blue-900 p-3 rounded text-white font-semibold mb-4">
+        <button
+          onClick={handleLogin}
+          className="bg-blue-800 hover:bg-blue-900 p-3 rounded text-white font-semibold mb-4">
           Login
         </button>
 
@@ -56,7 +94,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={signInWithFacebook}
+          onClick={() => toast("Facebook Sign-in is currently disabled.")}
           className="flex items-center justify-center gap-2 bg-white text-black p-3 rounded border border-gray-300"
         >
           <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="facebook" className="h-5 w-5" />
@@ -67,7 +105,6 @@ export default function Home() {
           Don’t have an account? <a href="/signup" className="underline">Signup</a>
         </p>
 
-        {/* 🔀 Random Navigation Button */}
         <button
           onClick={() => window.location.href = "/dashboard"}
           className="mt-6 bg-white text-blue-700 font-bold px-6 py-2 rounded border border-blue-700 hover:bg-blue-100 transition"
