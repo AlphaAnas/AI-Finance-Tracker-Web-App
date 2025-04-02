@@ -20,7 +20,7 @@ export default function Signup() {
       setTimeout(() => {
         window.location.href = "/";
       }, 2000);
-    } catch (error) {
+    } catch (error: any) { // ✅ FIXED here
       if (error.code === "auth/email-already-in-use") {
         setEmailExists(true);
         toast.error("Email exists already, Try logging in?");
@@ -32,6 +32,7 @@ export default function Signup() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex min-h-screen">
