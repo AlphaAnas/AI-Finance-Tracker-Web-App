@@ -1,48 +1,81 @@
 'use client';
 
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithPhoneNumber,
+  RecaptchaVerifier
+} from 'firebase/auth';
 import { auth } from 'src/app/firebase.js';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
   const [emailExists, setEmailExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const handleSignup = async () => {
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+  // 🔹 ADDED: Password Strength Function
+  const getPasswordStrength = () => {
+    if (password.length < 6) return { level: 'Weak', color: 'red' };
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { level: 'Medium', color: 'orange' };
+    if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password))
+      return { level: 'Strong', color: 'green' };
+    return { level: 'Medium', color: 'orange' };
+  };
 
-    if (!email || !password || !confirmPassword || !phone) {
-      toast.error("All fields are required");
-      return;
+  const isPasswordMatch = password && confirmPassword && password === confirmPassword;
+
+  // OTP functions (same as before)
+  const sendOtp = async () => {
+    if (!phone) return toast.error('Enter a valid phone number');
+    try {
+      const appVerifier = new RecaptchaVerifier(auth, 'recaptcha', { size: 'invisible' });
+      const confirmation = await signInWithPhoneNumber(auth, '+92' + phone, appVerifier);
+      setConfirmationResult(confirmation);
+      setOtpSent(true);
+      toast.success('OTP sent');
+    } catch (error) {
+      toast.error('Failed to send OTP');
     }
+  };
+
+  const verifyOtp = async () => {
+    try {
+      await confirmationResult.confirm(otp);
+      toast.success('Phone verified');
+      setOtpVerified(true);
+    } catch {
+      toast.error('Invalid OTP');
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!otpVerified) return toast.error('Please verify your phone first');
+    if (password !== confirmPassword) return toast.error('Passwords do not match');
+    if (!email || !password || !confirmPassword || !phone) return toast.error('All fields are required');
 
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("User created:", userCredential.user);
-      toast.success("Account created! Redirecting to login...");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
+      await createUserWithEmailAndPassword(auth, email, password);
+      toast.success('Account created! Redirecting...');
+      setTimeout(() => (window.location.href = '/'), 2000);
     } catch (error: any) {
-      if (error.code === "auth/email-already-in-use") {
+      if (error.code === 'auth/email-already-in-use') {
         setEmailExists(true);
         setShake(true);
         setTimeout(() => setShake(false), 500);
-        toast.error("Email already exists. Try logging in?");
+        toast.error('Email already exists');
       } else {
-        toast.error("Signup failed. Please try again.");
-        console.error("Signup error:", error.message);
+        toast.error('Signup failed');
       }
     } finally {
       setLoading(false);
@@ -53,10 +86,10 @@ export default function Signup() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-screen">
       {/* Logo Section */}
       <div className="flex-1 bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl font-bold text-[#3b82f6] mb-1">Expense</h1>
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-[#3b82f6]">Expense</h1>
           <p className="text-4xl font-bold text-[#3b82f6] mb-4">TRACKER</p>
-          <img src="/logo.png" alt="Logo" className="h-32" />
+          <img src="/logo.png" alt="Logo" className="h-32 mx-auto" />
         </div>
       </div>
 
@@ -98,13 +131,33 @@ export default function Signup() {
             ))}
           </div>
 
-          <input
-            type="text"
-            placeholder="Phone number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="bg-white text-black p-3 w-full rounded border mb-3"
-          />
+          {/* Phone Input */}
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              placeholder="Phone number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="bg-white text-black p-3 w-full rounded border"
+            />
+            <button onClick={sendOtp} className="bg-black px-3 rounded">Send OTP</button>
+          </div>
+
+          {/* OTP */}
+          {otpSent && (
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="bg-white text-black p-3 w-full rounded border"
+              />
+              <button onClick={verifyOtp} className="bg-green-700 px-4 rounded">Verify</button>
+            </div>
+          )}
+
+          {/* Email */}
           <input
             type="email"
             placeholder="Email"
@@ -115,31 +168,46 @@ export default function Signup() {
             }}
             className="bg-white text-black p-3 w-full rounded border mb-3"
           />
+
+          {/* Password Fields + Strength View */}
           <input
             type="password"
             placeholder="New password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="bg-white text-black p-3 w-full rounded border mb-3"
+            className="bg-white text-black p-3 w-full rounded border mb-1"
           />
+          {/* 🔹 Password strength display */}
+          {password && (
+            <p className="text-sm mb-2" style={{ color: getPasswordStrength().color }}>
+              Strength: {getPasswordStrength().level}
+            </p>
+          )}
+
           <input
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
-            className="bg-white text-black p-3 w-full rounded border mb-5"
+            className="bg-white text-black p-3 w-full rounded border mb-1"
           />
+          {/* 🔹 Password match display */}
+          {confirmPassword && (
+            <p className={`text-sm mb-4 ${isPasswordMatch ? 'text-green-200' : 'text-red-200'}`}>
+              {isPasswordMatch ? "Passwords match" : "Passwords do not match"}
+            </p>
+          )}
+
+          <div id="recaptcha" className="mb-3"></div>
 
           <button
             onClick={handleSignup}
             disabled={emailExists || loading}
             className={`p-3 rounded w-full font-semibold mb-4 ${
-              emailExists || loading
-                ? 'bg-gray-400 cursor-not-allowed text-white'
-                : 'bg-green-600 hover:bg-green-700 text-white'
+              emailExists || loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
             }`}
           >
-            {loading ? "Creating Account..." : "Sign Up"}
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
 
           <p className="text-white/70 text-center text-sm">
