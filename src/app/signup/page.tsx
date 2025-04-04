@@ -4,14 +4,28 @@ import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from 'src/app/firebase.js';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [emailExists, setEmailExists] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (!email || !password || !confirmPassword || !phone) {
+      toast.error("All fields are required");
+      return;
+    }
+
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -20,10 +34,12 @@ export default function Signup() {
       setTimeout(() => {
         window.location.href = "/";
       }, 2000);
-    } catch (error: any) { // ✅ FIXED here
+    } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         setEmailExists(true);
-        toast.error("Email exists already, Try logging in?");
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+        toast.error("Email already exists. Try logging in?");
       } else {
         toast.error("Signup failed. Please try again.");
         console.error("Signup error:", error.message);
@@ -33,9 +49,8 @@ export default function Signup() {
     }
   };
 
-
   return (
-    <div className="flex min-h-screen">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-screen">
       {/* Logo Section */}
       <div className="flex-1 bg-white flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
@@ -47,7 +62,11 @@ export default function Signup() {
 
       {/* Signup Form Section */}
       <div className="flex-1 bg-blue-500 text-white flex flex-col justify-center px-12 py-16">
-        <div className="bg-blue-400 p-8 rounded-xl shadow-lg w-full max-w-xl mx-auto">
+        <motion.div
+          animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+          transition={{ duration: 0.4 }}
+          className="bg-blue-400 p-8 rounded-xl shadow-lg w-full max-w-xl mx-auto"
+        >
           <h2 className="text-3xl font-semibold mb-1">Create a new account</h2>
           <p className="mb-6 text-sm">It's quick and easy.</p>
 
@@ -80,8 +99,15 @@ export default function Signup() {
           </div>
 
           <input
+            type="text"
+            placeholder="Phone number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="bg-white text-black p-3 w-full rounded border mb-3"
+          />
+          <input
             type="email"
-            placeholder="Mobile number or email"
+            placeholder="Email"
             value={email}
             onChange={e => {
               setEmail(e.target.value);
@@ -94,6 +120,13 @@ export default function Signup() {
             placeholder="New password"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            className="bg-white text-black p-3 w-full rounded border mb-3"
+          />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
             className="bg-white text-black p-3 w-full rounded border mb-5"
           />
 
@@ -112,8 +145,8 @@ export default function Signup() {
           <p className="text-white/70 text-center text-sm">
             Already have an account? <a href="/" className="underline">Login here</a>
           </p>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
