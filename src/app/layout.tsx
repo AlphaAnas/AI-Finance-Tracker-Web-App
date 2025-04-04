@@ -1,9 +1,10 @@
-"use client"
-// llll
+"use client";
+
 import { ReactNode } from 'react';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
 import { usePathname } from 'next/navigation';
+import { Toaster } from 'react-hot-toast'; // ✅ ADD THIS
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <Toaster position="top-center" /> {/* ✅ ADD THIS */}
         <div className="flex h-screen">
           {/* Only show sidebar if not on auth pages */}
           {!isAuthPage && (

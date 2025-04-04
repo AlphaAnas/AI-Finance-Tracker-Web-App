@@ -2,47 +2,49 @@
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from 'src/app/firebase.js';
+import { auth } from 'src/app/firebase';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const provider = new GoogleAuthProvider();
-
-function signInWithGoogle() {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      toast.success("Google login successful!");
-      console.log("Google signed in:", result.user);
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1500);
-    })
-    .catch(error => {
-      toast.error("Google login failed.");
-      console.error("Google login error:", error.message);
-    });
-}
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        toast.success("Login successful!");
-        console.log("Logged in:", userCredential.user);
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1500);
-      })
-      .catch(error => {
-        toast.error("Invalid credentials. Try again.");
-        console.error("Login error:", error.message);
-      });
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Login successful!');
+      console.log("Logged in:", userCredential.user);
+      setTimeout(() => window.location.href = "/dashboard", 1500);
+    } catch (error: any) {
+      console.error("Login error:", error.message);
+      toast.error('Invalid email or password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Google login successful!');
+      console.log("Google signed in:", result.user);
+      setTimeout(() => window.location.href = "/dashboard", 1500);
+    } catch (error: any) {
+      console.error("Google login error:", error.message);
+      toast.error('Google login failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-screen">
       {/* Logo Section */}
       <div className="flex-1 bg-white flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
@@ -61,22 +63,26 @@ export default function Home() {
           type="email"
           placeholder="example@email.com"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="mb-3 p-3 rounded w-full text-black bg-white border"
         />
         <input
           type="password"
           placeholder="at least 8 characters"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="mb-2 p-3 rounded w-full text-black bg-white border"
         />
         <a href="#" className="text-sm mb-4 text-right text-white/70">Forgot password?</a>
 
         <button
           onClick={handleLogin}
-          className="bg-blue-800 hover:bg-blue-900 p-3 rounded text-white font-semibold mb-4">
-          Login
+          disabled={loading}
+          className={`p-3 rounded w-full font-semibold mb-4 ${
+            loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-800 hover:bg-blue-900"
+          }`}
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <div className="flex items-center mb-4">
@@ -87,6 +93,7 @@ export default function Home() {
 
         <button
           onClick={signInWithGoogle}
+          disabled={loading}
           className="flex items-center justify-center gap-2 bg-white text-black p-3 rounded border border-gray-300 mb-2"
         >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="google" className="h-5 w-5" />
@@ -112,6 +119,6 @@ export default function Home() {
           Go to Random Page →
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
