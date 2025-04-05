@@ -360,6 +360,17 @@ export default function BudgetsPage() {
             </Card>
           </div>
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
+          <h2 className="font-bold">📊 Real-Time Expense Tracking</h2>
+          <div className="bg-green-100 text-black p-2 rounded mt-2">
+            <p>Grocery = 10,592</p>
+            <p>Fuel = 2,672</p>
+            <p>Spotify = 349</p>
+          </div>
+          <p className="mt-2">💰 Amount Spent (Feb 2025): Rs. 13,613</p>
+          <p>🛍️ Total Spent: Rs. 90,125</p>
+          <p>💳 Remaining Budget: Rs. 8,975</p>
+          </div>
+          <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
             <h2 className="font-bold">🔍 Personalised Insights</h2>
             <button className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-green-600 transition mt-2">
               Give me total of Feb
@@ -370,6 +381,18 @@ export default function BudgetsPage() {
               <p>❌ Spent: Rs. 93,125</p>
               <p>💰 Balance: Rs. 29,875</p>
             </div>
+          </div>
+          <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
+          <h2 className="font-bold">📄 Detailed Statement</h2>
+          <button className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-green-600 transition mt-2">
+            Show me Feb statement
+          </button>
+          <div className="bg-white text-black p-2 rounded mt-2">
+            <h3 className="font-bold">📑 Hassab Statement - February 2025:</h3>
+            <p>🛍️ Total Spent: Rs. 93,125</p>
+            <p>💰 Total Received: Rs. 100,500</p>
+            <p>💳 Balance: Rs. 29,875</p>
+          </div>
           </div>
         </TabsContent>
       </Tabs>
