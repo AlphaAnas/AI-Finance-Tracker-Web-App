@@ -359,6 +359,18 @@ export default function BudgetsPage() {
               </CardContent>
             </Card>
           </div>
+          <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
+            <h2 className="font-bold">🔍 Personalised Insights</h2>
+            <button className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-green-600 transition mt-2">
+              Give me total of Feb
+            </button>
+            <div className="bg-white text-black p-2 rounded mt-2">
+              <h3 className="font-bold">📅 Your February 2025 Summary:</h3>
+              <p>✔️ Received: Rs. 100,500</p>
+              <p>❌ Spent: Rs. 93,125</p>
+              <p>💰 Balance: Rs. 29,875</p>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
