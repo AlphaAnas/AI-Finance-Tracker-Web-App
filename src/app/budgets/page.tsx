@@ -359,6 +359,17 @@ export default function BudgetsPage() {
               </CardContent>
             </Card>
           </div>
+
+          <h1 className="text-2xl font-bold mb-6 text-black">Financial Analysis</h1>
+          <div className="space-y-4 w-full max-w-md">
+            <button className="w-full bg-blue-500 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-600 transition">
+              Show Statement
+            </button>
+            <button className="w-full bg-blue-500 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-600 transition">
+              Do an Analysis of My Budget So Far and Make Recommendations
+            </button>
+          </div>
+
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
           <h2 className="font-bold">📊 Real-Time Expense Tracking</h2>
           <div className="bg-green-100 text-black p-2 rounded mt-2">
