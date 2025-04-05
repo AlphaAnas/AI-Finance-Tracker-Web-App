@@ -384,6 +384,10 @@ export default function BudgetsPage() {
           <p>🛍️ Total Spent: Rs. 90,125</p>
           <p>💳 Remaining Budget: Rs. 8,975</p>
           </div>
+          <div className="flex space-x-4">
+            <div className="bg-white-200 p-4"></div>
+            <div className="bg-white-300 p-4"></div>
+          </div>
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
             <h2 className="font-bold">🔍 Personalised Insights</h2>
             <button className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-green-600 transition mt-2">
@@ -395,6 +399,10 @@ export default function BudgetsPage() {
               <p>❌ Spent: Rs. 93,125</p>
               <p>💰 Balance: Rs. 29,875</p>
             </div>
+          </div>
+          <div className="flex space-x-4">
+            <div className="bg-white-200 p-4"></div>
+            <div className="bg-white-300 p-4"></div>
           </div>
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
           <h2 className="font-bold">📄 Detailed Statement</h2>
