@@ -314,19 +314,6 @@ export default function BudgetsPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 border rounded-lg bg-gray-100 border-gray-200">
-                    <div className="flex gap-3">
-                      <div className="bg-gray-800 text-white p-2 rounded-full h-fit">
-                        <TrendingDown className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">Spending Anomaly Detected</h4>
-                        <p className="text-sm text-gray-600 mt-1">
-                          View Statement
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                   <div>
                     <h4 className="font-medium text-gray-800 mb-3">Predictive Spending Forecast</h4>
                     <div className="h-[180px] w-full bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg flex items-center justify-center">
@@ -372,7 +359,6 @@ export default function BudgetsPage() {
               </CardContent>
             </Card>
           </div>
-          
         </TabsContent>
       </Tabs>
     </div>
