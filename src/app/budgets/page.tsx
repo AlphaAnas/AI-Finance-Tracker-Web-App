@@ -370,8 +370,8 @@ export default function BudgetsPage() {
             </button>
           </div>
           <div className="flex space-x-4">
-            <div className="bg-gray-200 p-4">Box 1</div>
-            <div className="bg-gray-300 p-4">Box 2</div>
+            <div className="bg-white-200 p-4"></div>
+            <div className="bg-white-300 p-4"></div>
           </div>
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
           <h2 className="font-bold">📊 Real-Time Expense Tracking</h2>
