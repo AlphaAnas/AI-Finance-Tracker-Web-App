@@ -1,0 +1,21 @@
+{
+  "InvoiceNumber": 3014832,
+  "Items": [
+    {
+      "ItemName": "Prove amount sell.",
+      "Price": 64.54,
+      "Quantity": 1,
+      "Total": 64.54
+    },
+    {
+      "ItemName": "Assume against.",
+      "Price": 62.36,
+      "Quantity": 6,
+      "Total": 374.16
+    }
+  ],
+  "InvoiceDate": "03-Jan-1994",
+  "TotalAmount": 441.14,
+  "VendorName": "HGH",
+  "InvoiceType": "INVOICE"
+}

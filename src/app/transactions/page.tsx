@@ -1,106 +1,95 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaArrowUp, 
-  FaArrowDown, 
-  FaFileExport, 
-  FaPlus 
+import React, { useState, useEffect } from 'react';
+import {
+  FaSearch,
+  FaFilter,
+  FaArrowUp,
+  FaArrowDown,
+  FaFileExport,
+  FaPlus,
+  FaUpload,
+  FaTimes,
+  FaCheckCircle
 } from 'react-icons/fa';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast, Toaster } from 'react-hot-toast';
 
-// Sample transaction data
-const sampleTransactions = [
-  {
-    id: "TRX-7823",
-    account: "Main Checking",
-    date: "2023-08-15",
-    status: "incoming",
-    amount: 1250.00,
-    category: "Salary",
-    description: "Monthly salary deposit"
-  },
-  {
-    id: "TRX-7824",
-    account: "Credit Card",
-    date: "2023-08-14",
-    status: "outgoing",
-    amount: 120.50,
-    category: "Groceries", 
-    description: "Weekly grocery shopping"
-  },
-  {
-    id: "TRX-7825",
-    account: "Savings",
-    date: "2023-08-13",
-    status: "incoming",
-    amount: 500.00,
-    category: "Transfer",
-    description: "Transfer from checking"
-  },
-  {
-    id: "TRX-7826",
-    account: "Main Checking",
-    date: "2023-08-12",
-    status: "outgoing",
-    amount: 45.00,
-    category: "Entertainment",
-    description: "Movie tickets"
-  },
-  {
-    id: "TRX-7827",
-    account: "Credit Card",
-    date: "2023-08-10",
-    status: "outgoing",
-    amount: 85.20,
-    category: "Utilities",
-    description: "Electricity bill"
-  },
-  {
-    id: "TRX-7828",
-    account: "Main Checking",
-    date: "2023-08-09",
-    status: "outgoing",
-    amount: 35.75,
-    category: "Transportation",
-    description: "Fuel"
-  },
-  {
-    id: "TRX-7829",
-    account: "Savings",
-    date: "2023-08-08",
-    status: "incoming",
-    amount: 200.00,
-    category: "Interest",
-    description: "Monthly interest"
-  },
-  {
-    id: "TRX-7830",
-    account: "Credit Card",
-    date: "2023-08-07",
-    status: "outgoing",
-    amount: 129.99,
-    category: "Shopping",
-    description: "New headphones"
-  },
-];
+interface Transaction {
+  id: string;
+  account: string;
+  date: string;
+  status: "incoming" | "outgoing";
+  amount: number;
+  category: string;
+  description: string;
+  vendor?: string;
+  invoiceType?: string;
+  gstAmount?: number;
+  items?: Array<{
+    ItemName: string;
+    Price: number;
+    Quantity: number;
+  }>;
+}
 
 export default function TransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateSort, setDateSort] = useState("desc");
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
+  const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState("manual");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter and sort transactions
-  const filteredTransactions = sampleTransactions
+  const fetchTransactions = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/transactions');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch transactions');
+      }
+      const data = await response.json();
+      setTransactions(data);
+    } catch (err) {
+      console.error('Error details:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const filteredTransactions = transactions
     .filter(transaction => {
-      // Apply status filter
       if (statusFilter !== "all" && transaction.status !== statusFilter) {
         return false;
       }
-      
-      // Apply search filter
+
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
@@ -110,11 +99,10 @@ export default function TransactionsPage() {
           transaction.description.toLowerCase().includes(searchLower)
         );
       }
-      
+
       return true;
     })
     .sort((a, b) => {
-      // Sort by date
       if (dateSort === "desc") {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       } else {
@@ -122,16 +110,14 @@ export default function TransactionsPage() {
       }
     });
 
-  // Toggle selection of a transaction
   const toggleSelect = (id: string) => {
-    setSelectedTransactions(prev => 
-      prev.includes(id) 
+    setSelectedTransactions(prev =>
+      prev.includes(id)
         ? prev.filter(transId => transId !== id)
         : [...prev, id]
     );
   };
 
-  // Toggle selection of all transactions
   const toggleSelectAll = () => {
     if (selectedTransactions.length === filteredTransactions.length) {
       setSelectedTransactions([]);
@@ -140,26 +126,436 @@ export default function TransactionsPage() {
     }
   };
 
-  // Handle date sort toggle
   const toggleDateSort = () => {
     setDateSort(prev => prev === "desc" ? "asc" : "desc");
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      await processReceipt(file);
+    }
+  };
+
+  const processReceipt = async (file: File) => {
+    try {
+      setIsProcessing(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/process-receipt', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process receipt');
+      }
+
+      const result = await response.json();
+      setExtractedData(result.data);
+
+      if (result.data) {
+        const amountInput = document.getElementById('amount') as HTMLInputElement;
+        if (amountInput && result.data.TotalAmount) {
+          amountInput.value = result.data.TotalAmount.toString();
+        }
+      }
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+      toast.error('Error processing receipt. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const loadingToast = toast.loading('Adding transaction...');
+
+    try {
+      if (transactionType === 'image' && selectedImage) {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+
+        const response = await fetch('/api/process-receipt', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to process receipt');
+        }
+
+        const result = await response.json();
+
+        const newTransaction: Transaction = {
+          id: result.data.InvoiceNumber?.toString() || `TRX-${Date.now()}`,
+          account: 'checking',
+          date: result.data.InvoiceDate || new Date().toISOString().split('T')[0],
+          status: 'outgoing',
+          amount: result.data.TotalAmount || 0,
+          category: 'other',
+          description: `Receipt from ${result.data.VendorName || 'Unknown Vendor'}`,
+          vendor: result.data.VendorName,
+          invoiceType: result.data.InvoiceType,
+          gstAmount: result.data.GSTAmount,
+          items: result.data.Items
+        };
+
+        // Save the transaction to the backend
+        const saveResponse = await fetch('/api/save-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(result.data),
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error('Failed to save transaction');
+        }
+
+        // Refresh the transactions list
+        await fetchTransactions();
+      } else {
+        const formData = new FormData(e.target as HTMLFormElement);
+        const newTransaction: Transaction = {
+          id: `TRX-${Date.now()}`,
+          account: formData.get('account') as string,
+          date: formData.get('date') as string,
+          status: formData.get('type') as 'incoming' | 'outgoing',
+          amount: parseFloat(formData.get('amount') as string),
+          category: formData.get('category') as string,
+          description: formData.get('description') as string
+        };
+
+        // Save the transaction to the backend
+        const saveResponse = await fetch('/api/save-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            InvoiceNumber: newTransaction.id.replace('TRX-', ''),
+            InvoiceDate: newTransaction.date,
+            TotalAmount: newTransaction.amount,
+            VendorName: newTransaction.category,
+            Description: newTransaction.description
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error('Failed to save transaction');
+        }
+
+        // Refresh the transactions list
+        await fetchTransactions();
+      }
+
+      toast.success('Transaction added successfully!', { id: loadingToast });
+      setIsAddTransactionOpen(false);
+      setSelectedImage(null);
+      setImagePreview(null);
+      setExtractedData(null);
+    } catch (error) {
+      console.error('Error submitting transaction:', error);
+      toast.error('Failed to add transaction. Please try again.', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="p-6">
+      <Toaster position="top-right" />
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-blue-500">Transactions</h1>
         <div className="flex space-x-2">
-          <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            <FaPlus /> Add Transaction
-          </button>
-          <button className="flex items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+          <Dialog open={isAddTransactionOpen} onOpenChange={setIsAddTransactionOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                <FaPlus /> Add Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add New Transaction</DialogTitle>
+                <DialogDescription>
+                  Add a new transaction either manually or by uploading a receipt image.
+                </DialogDescription>
+              </DialogHeader>
+
+              <Tabs defaultValue="manual" className="w-full" onValueChange={setTransactionType}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                  <TabsTrigger value="image">Upload Receipt</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="manual">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Amount</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                          <Input id="amount" name="amount" type="number" className="pl-7" placeholder="0.00" required />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Transaction Type</Label>
+                        <Select name="type">
+                          <SelectTrigger id="type">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="incoming">Incoming</SelectItem>
+                            <SelectItem value="outgoing">Outgoing</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="account">Account</Label>
+                        <Select name="account">
+                          <SelectTrigger id="account">
+                            <SelectValue placeholder="Select account" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="checking">Main Checking</SelectItem>
+                            <SelectItem value="savings">Savings</SelectItem>
+                            <SelectItem value="credit">Credit Card</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category</Label>
+                        <Select name="category">
+                          <SelectTrigger id="category">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="salary">Salary</SelectItem>
+                            <SelectItem value="groceries">Groceries</SelectItem>
+                            <SelectItem value="utilities">Utilities</SelectItem>
+                            <SelectItem value="entertainment">Entertainment</SelectItem>
+                            <SelectItem value="shopping">Shopping</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Input id="description" name="description" placeholder="Enter transaction description" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Date</Label>
+                      <Input
+                        id="date"
+                        name="date"
+                        type="date"
+                        defaultValue={extractedData?.InvoiceDate || new Date().toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      <Button type="submit" onClick={() => setIsAddTransactionOpen(false)} disabled={isSubmitting}>
+                        Add Transaction
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="image">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      {isProcessing ? (
+                        <div className="space-y-2">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                          <p className="text-sm text-gray-600">Processing receipt...</p>
+                        </div>
+                      ) : imagePreview ? (
+                        <div className="relative">
+                          <img src={imagePreview} alt="Receipt preview" className="max-h-64 mx-auto" />
+                          <button
+                            onClick={() => {
+                              setSelectedImage(null);
+                              setImagePreview(null);
+                              setExtractedData(null);
+                            }}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <FaUpload className="mx-auto h-12 w-12 text-gray-400" />
+                          <div className="text-sm text-gray-600">
+                            <label
+                              htmlFor="receipt-upload"
+                              className="relative cursor-pointer rounded-md font-medium text-blue-500 hover:text-blue-600"
+                            >
+                              <span>Upload a receipt image</span>
+                              <input
+                                id="receipt-upload"
+                                name="receipt-upload"
+                                type="file"
+                                className="sr-only"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                              />
+                            </label>
+                            <p className="pl-1">or drag and drop</p>
+                          </div>
+                          <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {extractedData && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Extracted Receipt Details</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="amount">Amount</Label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                                <Input
+                                  id="amount"
+                                  name="amount"
+                                  type="number"
+                                  className="pl-7"
+                                  defaultValue={extractedData.TotalAmount || ''}
+                                  required
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="type">Transaction Type</Label>
+                              <Select name="type" defaultValue="outgoing">
+                                <SelectTrigger id="type">
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="incoming">Incoming</SelectItem>
+                                  <SelectItem value="outgoing">Outgoing</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="account">Account</Label>
+                            <Select name="account" defaultValue="checking">
+                              <SelectTrigger id="account">
+                                <SelectValue placeholder="Select account" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="checking">Main Checking</SelectItem>
+                                <SelectItem value="savings">Savings</SelectItem>
+                                <SelectItem value="credit">Credit Card</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="category">Category</Label>
+                            <Select name="category" defaultValue="other">
+                              <SelectTrigger id="category">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="salary">Salary</SelectItem>
+                                <SelectItem value="groceries">Groceries</SelectItem>
+                                <SelectItem value="utilities">Utilities</SelectItem>
+                                <SelectItem value="entertainment">Entertainment</SelectItem>
+                                <SelectItem value="shopping">Shopping</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Input
+                              id="description"
+                              name="description"
+                              defaultValue={`Receipt from ${extractedData.VendorName || 'Unknown Vendor'}`}
+                              placeholder="Enter transaction description"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="date">Date</Label>
+                            <Input
+                              id="date"
+                              name="date"
+                              type="date"
+                              defaultValue={extractedData.InvoiceDate || new Date().toISOString().split('T')[0]}
+                              required
+                            />
+                          </div>
+
+                          {extractedData.Items && extractedData.Items.length > 0 && (
+                            <div className="mt-4">
+                              <Label>Items</Label>
+                              <div className="mt-2 space-y-2">
+                                {extractedData.Items.map((item: any, index: number) => (
+                                  <div key={index} className="flex justify-between items-center text-sm">
+                                    <span>{item.ItemName}</span>
+                                    <span>${item.Price.toFixed(2)} x {item.Quantity}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <DialogFooter>
+                          <Button type="submit" onClick={() => setIsAddTransactionOpen(false)} disabled={isSubmitting}>
+                            Add Transaction
+                          </Button>
+                        </DialogFooter>
+                      </div>
+                    )}
+                  </form>
+                </TabsContent>
+              </Tabs>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddTransactionOpen(false)} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <button className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
             <FaFileExport /> Export
           </button>
         </div>
       </div>
 
-      {/* Filters and search */}
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="relative flex-1">
@@ -170,12 +566,12 @@ export default function TransactionsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800" />
           </div>
-          
+
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-gray-700">Status:</span>
+              <span className="text-gray-800">Status:</span>
               <select
                 className="border border-gray-300 rounded-md px-3 py-2"
                 value={statusFilter}
@@ -186,9 +582,9 @@ export default function TransactionsPage() {
                 <option value="outgoing">Outgoing</option>
               </select>
             </div>
-            
-            <button 
-              className="flex items-center gap-2 text-gray-700 bg-gray-100 px-3 py-2 rounded-md hover:bg-gray-200"
+
+            <button
+              className="flex items-center gap-2 text-gray-800 bg-gray-100 px-3 py-2 rounded-md hover:bg-gray-200"
               onClick={() => {
                 setSearchTerm("");
                 setStatusFilter("all");
@@ -201,38 +597,49 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {/* Transactions table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-[oklch(0.961_0.01_0)]">
               <tr>
                 <th className="px-6 py-4 text-left">
-                  <span className="text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <span className="text-xs font-medium text-gray-800 uppercase tracking-wider">
                     Transaction ID
                   </span>
                 </th>
-                <th className="px-8 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Account
                 </th>
                 <th className="px-8 py-4 text-left">
                   <div className="flex items-center cursor-pointer" onClick={toggleDateSort}>
-                    <span className="text-xs font-medium text-gray-700 uppercase tracking-wider mr-1">Date</span>
+                    <span className="text-xs font-medium text-gray-800 uppercase tracking-wider mr-1">Date</span>
                     {dateSort === "desc" ? <FaArrowDown size={12} /> : <FaArrowUp size={12} />}
                   </div>
                 </th>
-                <th className="px-8 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-8 py-4 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                <th className="px-8 py-4 text-right text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Amount
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTransactions.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-red-600">
+                    {error}
+                  </td>
+                </tr>
+              ) : filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
                     No transactions found
                   </td>
                 </tr>
@@ -242,10 +649,10 @@ export default function TransactionsPage() {
                     <td className="px-6 py-5 whitespace-nowrap">
                       <span className="font-medium text-gray-900">{transaction.id}</span>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
                       {transaction.account}
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
                       {new Date(transaction.date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -254,8 +661,8 @@ export default function TransactionsPage() {
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        transaction.status === 'incoming' 
-                          ? 'bg-green-100 text-green-800' 
+                        transaction.status === 'incoming'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {transaction.status === 'incoming' ? (
@@ -276,12 +683,11 @@ export default function TransactionsPage() {
             </tbody>
           </table>
         </div>
-        
-        {/* Table footer with pagination */}
+
         <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-800">
                 Showing <span className="font-medium">{filteredTransactions.length}</span> transactions
                 {selectedTransactions.length > 0 && (
                   <span className="ml-1">
@@ -294,7 +700,7 @@ export default function TransactionsPage() {
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <a
                   href="#"
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Previous
                 </a>
@@ -318,7 +724,7 @@ export default function TransactionsPage() {
                 </a>
                 <a
                   href="#"
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Next
                 </a>
@@ -329,4 +735,4 @@ export default function TransactionsPage() {
       </div>
     </div>
   );
-} 
+}
