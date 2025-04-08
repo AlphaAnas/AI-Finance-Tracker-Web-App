@@ -1,35 +1,17 @@
 import Image from "next/image";
 import React from "react";
 
-
 const ProfilePage = () => {
     return (
-        <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen p-6">
-            {/* Sidebar */}
-            <aside className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md">
-                <hr className="border-blue-600 my-4" />
-                <h2 className="text-xl mb-4 text-blue-600">General Preferences</h2>
-                <nav>
-                    <ul className="space-y-2">
-                        <li className="text-blue-600 cursor-pointer">Dashboard</li> 
-                        <li className="text-blue-600 cursor-pointer">Statistics</li>
-                        <li className="text-blue-600 cursor-pointer">Transactions</li>
-                        <li className="text-blue-600 cursor-pointer">Budget</li>
-                        <li className="text-blue-600 cursor-pointer">Analysis</li>
-                    </ul>
-                </nav>
-                <hr className="border-blue-600 my-4" />
-
-                <h2 className="text-xl mt-6 text-blue-600">Other Preferences</h2>
-                <button className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md w-full">
-                    My Account
-                </button>
-            </aside>
-
+        <div className="flex flex-col bg-gray-100 min-h-screen p-6">
             {/* Main Content */}
             <main className="flex-1 p-6">
-                <h1 className="text-2xl font-bold mb-4 text-blue-600">Your Profile</h1>
                 <div className="bg-white p-6 rounded-lg shadow-md grid md:grid-cols-3 gap-6">
+                    {/* Heading inside the white card */}
+                    <h1 className="text-2xl font-bold mb-4 text-blue-600 md:col-span-3">
+                        Your Profile
+                    </h1>
+
                     {/* Profile Details */}
                     <section className="md:col-span-1 border-r p-4">
                         <div className="text-center">
@@ -65,14 +47,13 @@ const ProfilePage = () => {
                         </div>
                     </section>
 
-                    {/* Payment Cards */}
+                    {/* Payment Cards and Account Info */}
                     <section className="md:col-span-2 p-4">
                         <h2 className="text-lg text-blue-600">Your Payment Cards</h2>
                         <div className="flex gap-4 mt-4">
                             <div className="bg-blue-500 text-white p-4 rounded-md flex-1 h-40 relative">
                                 <p>ZAHV</p>
                                 <p className="text-base tracking-widest font-mono mt-4">1101 2001 8723 7001</p>
-                                {/* <p className="text-sm mt-2">Deep Shah - Exp: 06/27</p> */}
 
                                 <div className="absolute bottom-4 left-4">
                                     <p className="text-xs uppercase text-white-100">Cardholder Name</p>
@@ -88,7 +69,6 @@ const ProfilePage = () => {
                             <div className="bg-blue-500 text-white p-4 rounded-md flex-1 h-40 relative">
                                 <p>GHRD</p>
                                 <p className="text-base tracking-widest font-mono mt-4">1101 2001 8723 7001</p>
-                                {/* <p className="text-sm mt-2">Deep Shah - Exp: 06/27</p> */}
 
                                 <div className="absolute bottom-4 left-4">
                                     <p className="text-xs uppercase text-white-100">Cardholder Name</p>
@@ -129,7 +109,7 @@ const ProfilePage = () => {
                                 <p className="font-bold text-blue-500">XXXXXXXX</p>
                             </div>
 
-                            <h2 className="text-lg font-bold mt-6">Your Banking Details</h2>
+                            <h2 className="text-lg text-blue-500 font-bold mt-6">Your Banking Details</h2>
                             <div className="mt-2 flex justify-between items-center gap-4">
                                 <p className="text-gray-500">KYC Verification</p>
                                 <p className="font-bold text-blue-500">Verified</p>
