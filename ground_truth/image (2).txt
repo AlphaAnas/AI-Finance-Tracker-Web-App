@@ -1,0 +1,40 @@
+{
+  "InvoiceNumber": 39,
+  "Items": [
+    {
+      "ItemName": "Near relate.",
+      "Price": 68.56,
+      "Quantity": 4,
+      "Total": 274.24
+    },
+    {
+      "ItemName": "Skill land.",
+      "Price": 59.54,
+      "Quantity": 2,
+      "Total": 119.08
+    },
+    {
+      "ItemName": "Attention education.",
+      "Price": 53.72,
+      "Quantity": 3,
+      "Total": 161.16
+    },
+    {
+      "ItemName": "Sometimes buy establish.",
+      "Price": 41.43,
+      "Quantity": 6,
+      "Total": 248.58
+    },
+    {
+      "ItemName": "Another close.",
+      "Price": 74.13,
+      "Quantity": 2,
+      "Total": 148.26
+    }
+  ],
+  "InvoiceDate": "15-Oct-2004",
+  "TotalAmount": 969.79,
+  "VendorName": "Richardson-Davis",
+  "InvoiceType": "COMMERCIAL INVOICE",
+  "GSTAmount": 28.55
+}
