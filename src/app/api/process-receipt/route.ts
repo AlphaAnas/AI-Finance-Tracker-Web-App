@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import fs from 'fs';
-import path from 'path';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-// Define prompt template
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+};
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const db = getFirestore(app);
+
+// Prompt for invoice parsing
 const prompt = `You are an expert invoice parser.
 
 Task: From the invoice image provided, extract the key fields:
@@ -33,74 +44,48 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Convert File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
-
-    // Initialize Gemini model
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // Process image with Gemini
     const result = await model.generateContent([
       prompt,
       {
         inlineData: {
           data: buffer.toString('base64'),
-          mimeType: file.type
-        }
-      }
+          mimeType: file.type,
+        },
+      },
     ]);
 
     const response = await result.response;
     const responseText = response.text();
-    
-    // Clean up the response text by removing markdown formatting
-    const cleanJson = responseText
-      .replace(/```json\n?/g, '') // Remove opening ```json
-      .replace(/```\n?/g, '')     // Remove closing ```
-      .trim();                    // Remove extra whitespace
-    
+    const cleanJson = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
     let extractedData;
     try {
       extractedData = JSON.parse(cleanJson);
-    } catch (parseError) {
-      console.error('Error parsing JSON:', parseError);
-      console.error('Raw response:', responseText);
-      return NextResponse.json(
-        { error: 'Failed to parse receipt data' },
-        { status: 500 }
-      );
+    } catch (error) {
+      console.error('JSON parse error:', error);
+      return NextResponse.json({ error: 'Failed to parse JSON' }, { status: 500 });
     }
 
-    // Generate unique filename
-    const timestamp = new Date().getTime();
-    const filename = `receipt_${timestamp}.txt`;
-    const groundTruthDir = path.join(process.cwd(), 'ground_truth');
-
-    // Ensure ground_truth directory exists
-    if (!fs.existsSync(groundTruthDir)) {
-      fs.mkdirSync(groundTruthDir, { recursive: true });
-    }
-
-    // Save extracted data to file
-    const filePath = path.join(groundTruthDir, filename);
-    fs.writeFileSync(filePath, JSON.stringify(extractedData, null, 2));
+    // 🔥 Store the parsed data in Firestore
+    await addDoc(collection(db, 'transactions'), {
+      ...extractedData,
+      createdAt: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       success: true,
-      filename,
-      data: extractedData
+      data: extractedData,
     });
-
   } catch (error) {
     console.error('Error processing receipt:', error);
-    return NextResponse.json(
-      { error: 'Failed to process receipt' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to process receipt' }, { status: 500 });
   }
-} 
+}
