@@ -5,6 +5,7 @@ export default function HomePage() {
 
   // Redirect to the dashboard page
   // when the user accesses the root URL
-  redirect("/login");
+  //redirect("/login");
+  redirect("/landingpage");
  
 }
