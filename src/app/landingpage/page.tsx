@@ -82,6 +82,7 @@ export default function Home() {
                 width={800}
                 height={600}
                 alt="Dashboard Preview"
+                
                 className="rounded-xl shadow-lg border"
               />
               <div className="flex justify-center gap-6 text-sm">
