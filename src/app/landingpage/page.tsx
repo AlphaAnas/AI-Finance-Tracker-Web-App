@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ArrowRight, BarChart3, CreditCard, PieChart, Shield, Smartphone, Users, Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import Lamp from "@/components/effects/lamp" // ✅ Import Lamp
+import { LampContainer } from "@/components/ui/lamp"
 
 const fadeIn = (direction = "up", delay = 0) => {
   return {
@@ -30,7 +30,20 @@ const fadeIn = (direction = "up", delay = 0) => {
 export default function Home() {
     return (
         <div className="flex flex-col min-h-screen overflow-x-hidden relative bg-black text-white">
-          <Lamp />
+          <LampContainer className="-mt-20">
+            <motion.h1
+              initial={{ opacity: 0.5, y: 100 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.3,
+                duration: 0.8,
+                ease: "easeInOut",
+              }}
+              className="mt-8 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
+            >
+              AI EXPENSE TRACKER
+            </motion.h1>
+          </LampContainer>
       
       <header className="border-b sticky top-0 bg-white z-10">
         <div className="container flex h-16 items-center justify-between">
@@ -55,7 +68,6 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        
       </header>
 
       <main className="flex-1">
@@ -82,7 +94,6 @@ export default function Home() {
                 width={800}
                 height={600}
                 alt="Dashboard Preview"
-                
                 className="rounded-xl shadow-lg border"
               />
               <div className="flex justify-center gap-6 text-sm">
