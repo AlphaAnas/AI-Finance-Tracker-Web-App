@@ -50,3 +50,7 @@ body {
   color: #0288D1;
 }
 /* Add similar styles for green, red, purple */
+
+html {
+  scroll-behavior: smooth;
+}
