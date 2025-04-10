@@ -150,7 +150,7 @@ export default function Signup() {
           </button>
 
           <p className="text-white/70 text-center text-sm">
-            Already have an account? <a href="/" className="underline">Login here</a>
+            Already have an account? <a href="/login" className="underline">Login here</a>
           </p>
         </motion.div>
       </div>
