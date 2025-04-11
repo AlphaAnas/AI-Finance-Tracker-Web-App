@@ -1,29 +1,32 @@
-"use client";
-
-import { ReactNode } from 'react';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
-import { usePathname } from 'next/navigation';
-import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
+import Header from './components/Header';
+import Sidebar from '../components/Sidebar';
+import ClientLayout from './components/ClientLayout';
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const isAuthPage = pathname === '/login' || pathname === '/signup';
+const inter = Inter({ subsets: ['latin'] });
 
+export const metadata: Metadata = {
+  title: 'Expense Tracker',
+  description: 'Track your expenses with AI',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <Toaster position="top-center" />
-        <div className="flex h-screen">
-          {!isAuthPage && (
-            <div className="w-1/5 min-w-40 max-w-60">
-              <Sidebar />
-            </div>
-          )}
-          <div className={`${!isAuthPage ? 'flex-1' : 'w-full'} overflow-y-auto bg-gray-100`}>
+      <body className={inter.className}>
+        <AuthProvider>
+          <Header />
+          <ClientLayout>
             {children}
-          </div>
-        </div>
+          </ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

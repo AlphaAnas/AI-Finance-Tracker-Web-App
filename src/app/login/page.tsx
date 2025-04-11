@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -10,6 +10,9 @@ import {
 import { auth } from 'src/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/app/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 const provider = new GoogleAuthProvider();
 
@@ -18,6 +21,15 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -28,7 +40,15 @@ export default function Home() {
       setTimeout(() => window.location.href = "/dashboard", 1500);
     } catch (error: any) {
       console.error("Login error:", error.message);
-      toast.error('Invalid email or password.');
+      if (error.code === 'auth/user-not-found') {
+        toast.error('Account does not exist.');
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error('Incorrect password.');
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error('Invalid email format.');
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -88,12 +108,22 @@ export default function Home() {
 
         {!resetMode && (
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="at least 8 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mb-2 p-3 rounded w-full text-black bg-white border"
           />
+        )}
+
+        {!resetMode && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         )}
 
         {!resetMode && (
@@ -136,7 +166,7 @@ export default function Home() {
             </button>
 
             <p className="mt-4 text-white/70 text-left text-sm">
-              Don’t have an account? <a href="/signup" className="underline">Signup</a>
+              Don't have an account? <a href="/signup" className="underline">Signup</a>
             </p>
 
             <button

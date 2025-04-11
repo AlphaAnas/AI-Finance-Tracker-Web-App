@@ -1,133 +1,167 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import React from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { ref, get, set } from "firebase/database";
+import { auth, db2 } from "src/app/firebase.js";
+import { useAuth } from '@/app/context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+import { db } from '@/app/firebase';
+
+interface UserData {
+  firstName: string;
+  surname: string;
+  dob: string;
+  gender: string;
+  email: string;
+  profilePicture?: string;
+  createdAt?: string;
+}
 
 const ProfilePage = () => {
+  const { user } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    surname: "",
+    email: "",
+    dob: "",
+    gender: "",
+    profilePicture: ""
+  });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log("Current user:", user);
+    const fetchUserData = async () => {
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          console.log("User data:", userDoc.data());
+          setUserData(userDoc.data() as UserData);
+          setFormData({
+            firstName: userDoc.data().firstName || "",
+            surname: userDoc.data().surname || "",
+            email: userDoc.data().email || "",
+            dob: userDoc.data().dob || "",
+            gender: userDoc.data().gender || "",
+            profilePicture: userDoc.data().profilePicture || ""
+          });
+          setPreview(userDoc.data().profilePicture || "");
+        } else {
+          console.error('User data not found');
+          toast.error('User data not found');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast.error('Failed to load user data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = ref(db2, "users/" + user.uid);
+      await set(userRef, {
+        ...formData,
+        profilePicture: preview,
+        uid: user.uid,
+        createdAt: userData?.createdAt || new Date().toISOString(),
+      });
+      setUserData({ ...formData, profilePicture: preview });
+      setIsEditing(false);
+    }
+  };
+
+  if (loading) {
     return (
-        <div className="flex flex-col bg-gray-100 min-h-screen p-6">
-            {/* Main Content */}
-            <main className="flex-1 p-6">
-                <div className="bg-white p-6 rounded-lg shadow-md grid md:grid-cols-3 gap-6">
-                    {/* Heading inside the white card */}
-                    <h1 className="text-2xl font-bold mb-4 text-blue-600 md:col-span-3">
-                        Your Profile
-                    </h1>
-
-                    {/* Profile Details */}
-                    <section className="md:col-span-1 border-r p-4">
-                        <div className="text-center">
-                            <div className="w-24 h-24 mx-auto border border-gray-300 rounded-full flex items-center justify-center">
-                                <span className="text-gray-500">YOUR IMAGE HERE</span>
-                            </div>
-                            <p className="mt-2 text-sm text-gray-500">Add your image</p>
-                        </div>
-                        <h2 className="text-lg mt-4 text-blue-600">Your Personal Details</h2>
-                        <div className="mt-2">
-                            <p className="text-gray-500">Full Name</p>
-                            <p className="bg-blue-100 p-2 rounded-md text-blue-600">Name Here</p>
-                        </div>
-                        <div className="mt-2">
-                            <p className="text-gray-500">Email</p>
-                            <p className="bg-blue-100 p-2 rounded-md text-blue-600">youremail@email.com</p>
-                        </div>
-                        <div className="mt-2">
-                            <p className="text-gray-500">Phone No.</p>
-                            <p className="bg-blue-100 p-2 rounded-md text-blue-600">+92-0900-78601</p>
-                        </div>
-                        <div className="mt-2">
-                            <p className="text-gray-500">Your Location</p>
-                            <p className="bg-blue-100 p-2 rounded-md text-blue-600">Karachi, Pakistan</p>
-                        </div>
-                        <div className="mt-4 flex gap-4">
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-md flex-1">
-                                Edit Details
-                            </button>
-                            <button className="bg-blue-300 text-white px-4 py-2 rounded-md flex-1">
-                                Cancel
-                            </button>
-                        </div>
-                    </section>
-
-                    {/* Payment Cards and Account Info */}
-                    <section className="md:col-span-2 p-4">
-                        <h2 className="text-lg text-blue-600">Your Payment Cards</h2>
-                        <div className="flex gap-4 mt-4">
-                            <div className="bg-blue-500 text-white p-4 rounded-md flex-1 h-40 relative">
-                                <p>ZAHV</p>
-                                <p className="text-base tracking-widest font-mono mt-4">1101 2001 8723 7001</p>
-
-                                <div className="absolute bottom-4 left-4">
-                                    <p className="text-xs uppercase text-white-100">Cardholder Name</p>
-                                    <p className="text-sm mt-2">Deep Shah</p>
-                                </div>
-
-                                <div className="absolute bottom-4 right-4">
-                                    <p className="text-xs uppercase text-white-100">Expiry Date</p>
-                                    <p className="text-sm mt-2">06/27</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-blue-500 text-white p-4 rounded-md flex-1 h-40 relative">
-                                <p>GHRD</p>
-                                <p className="text-base tracking-widest font-mono mt-4">1101 2001 8723 7001</p>
-
-                                <div className="absolute bottom-4 left-4">
-                                    <p className="text-xs uppercase text-white-100">Cardholder Name</p>
-                                    <p className="text-sm mt-2">Deep Shah</p>
-                                </div>
-
-                                <div className="absolute bottom-4 right-4">
-                                    <p className="text-xs uppercase text-white-100">Expiry Date</p>
-                                    <p className="text-sm mt-2">06/27</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-4 flex gap-4">
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-md">
-                                Manage Cards
-                            </button>
-                            <button className="bg-blue-300 text-white px-4 py-2 rounded-md">
-                                Cancel
-                            </button>
-                        </div>
-
-                        <div className="mt-6">
-                            <h2 className="text-lg text-blue-500">Your Account Details</h2>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Full Name</p>
-                                <p className="font-bold text-blue-500">Name Here</p>
-                            </div>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Finance Email</p>
-                                <p className="font-bold text-blue-500">name@business.com</p>
-                            </div>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Profession</p>
-                                <p className="font-bold text-blue-500">Bank Manager</p>
-                            </div>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Profile ID</p>
-                                <p className="font-bold text-blue-500">XXXXXXXX</p>
-                            </div>
-
-                            <h2 className="text-lg text-blue-500 font-bold mt-6">Your Banking Details</h2>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">KYC Verification</p>
-                                <p className="font-bold text-blue-500">Verified</p>
-                            </div>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Card 1 Number</p>
-                                <p className="font-bold text-blue-500">XXXX XXXX XXXX 7001</p>
-                            </div>
-                            <div className="mt-2 flex justify-between items-center gap-4">
-                                <p className="text-gray-500">Card 2 Number</p>
-                                <p className="font-bold text-blue-500">XXXX XXXX XXXX 9854</p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            </main>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
     );
+  }
+
+  if (!userData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">No user data found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              First Name
+            </label>
+            <p className="text-lg">{userData.firstName}</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Surname
+            </label>
+            <p className="text-lg">{userData.surname}</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Date of Birth
+            </label>
+            <p className="text-lg">{userData.dob}</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Gender
+            </label>
+            <p className="text-lg">{userData.gender}</p>
+          </div>
+          
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <p className="text-lg">{userData.email}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ProfilePage;
