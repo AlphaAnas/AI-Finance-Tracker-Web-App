@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, BarChart3, CreditCard, PieChart, Shield, Smartphone, Users, Camera } from "lucide-react"
+import { ArrowRight, BarChart3, CreditCard, PieChart, Shield, Users, Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { LampContainer } from "@/components/ui/lamp"
@@ -37,7 +37,11 @@ export default function Home() {
     <div className="flex flex-col min-h-screen overflow-x-hidden relative bg-gradient-to-b from-blue-950 via-blue-900 to-blue-950 text-white">
       {/* Subtle Lamp Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-blue-950/50 via-blue-900/50 to-blue-950/50 z-0" />
-      <LampContainer className="fixed top-0 left-0 w-full h-full -z-10 opacity-30" />
+      
+      {/* Fixed LampContainer - added children */}
+      <LampContainer className="fixed top-0 left-0 w-full h-full -z-10 opacity-30">
+        <div className="h-full w-full bg-transparent"></div>
+      </LampContainer>
 
       {/* Main Content */}
       <div className="relative z-10">
