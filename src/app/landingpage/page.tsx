@@ -116,70 +116,58 @@ export default function Home() {
             viewport={{ once: true, amount: 0.25 }}
             variants={fadeIn("up")}
           >
-            <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center bg-blue-900/80 p-10 rounded-2xl backdrop-blur-sm border border-blue-400/20 shadow-2xl">
-              
-              {/* Dashboard Image Preview */}
-              <motion.div 
-                className="order-2 lg:order-1"
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                variants={slideIn("left")}
-              >
-                <Image
-                  src="/dashboard.png"
-                  width={600}
-                  height={400}
-                  alt="Dashboard Preview"
-                  className="rounded-xl border border-blue-400/20 shadow-lg mx-auto"
-                />
-              </motion.div>
-
-              {/* Textual Content */}
+            <div className="max-w-6xl mx-auto bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl">
               <motion.div
-                className="space-y-6 order-1 lg:order-2"
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true }}
-                variants={slideIn("right")}
+                variants={fadeIn("up", 0.2)}
               >
-                <div className="inline-block rounded-lg bg-blue-500/20 px-4 py-2 text-sm text-blue-300">
+                <div className="inline-block rounded-lg bg-blue-500/20 px-4 py-2 text-sm text-blue-300 mb-6">
                   Dashboard Overview
                 </div>
-                <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">
+                <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl mb-6">
                   Your Financial Command Center
                 </h2>
-                <p className="text-blue-100 text-lg">
+                <p className="text-blue-100 text-lg mb-8">
                   Navigate through a visually rich dashboard that summarizes your expenses, categories, and insights in one clean view.
                 </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                <div className="flex justify-center">
+                  <Image
+                    src="/dashboard.png"
+                    width={1000}
+                    height={600}
+                    alt="Dashboard Preview"
+                    className="rounded-xl border border-blue-400/20 shadow-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20"
-                    whileHover={{ scale: 1.03 }}
+                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
+                    whileHover={{ y: -10 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <Shield className="h-7 w-7 text-blue-400 mb-3" />
-                    <h3 className="text-xl font-semibold mb-1">Secure & Encrypted</h3>
-                    <p className="text-blue-200 text-sm">End-to-end data protection</p>
+                    <Shield className="h-8 w-8 text-blue-400 mb-4" />
+                    <h3 className="text-xl font-bold mb-2">Secure & Encrypted</h3>
+                    <p className="text-blue-200">End-to-end data protection for your financial information</p>
                   </motion.div>
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20"
-                    whileHover={{ scale: 1.03 }}
+                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
+                    whileHover={{ y: -10 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <Users className="h-7 w-7 text-blue-400 mb-3" />
-                    <h3 className="text-xl font-semibold mb-1">10k+ Active Users</h3>
-                    <p className="text-blue-200 text-sm">Join a growing financial community</p>
+                    <Users className="h-8 w-8 text-blue-400 mb-4" />
+                    <h3 className="text-xl font-bold mb-2">10k+ Active Users</h3>
+                    <p className="text-blue-200">Join our growing community of smart financial planners</p>
                   </motion.div>
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20 sm:col-span-2"
-                    whileHover={{ scale: 1.03 }}
+                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
+                    whileHover={{ y: -10 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <CreditCard className="h-7 w-7 text-blue-400 mb-3" />
-                    <h3 className="text-xl font-semibold mb-1">Automated Tracking</h3>
-                    <p className="text-blue-200 text-sm">Track your expenses in real-time with AI</p>
+                    <CreditCard className="h-8 w-8 text-blue-400 mb-4" />
+                    <h3 className="text-xl font-bold mb-2">Automated Tracking</h3>
+                    <p className="text-blue-200">Real-time expense tracking powered by advanced AI</p>
                   </motion.div>
                 </div>
               </motion.div>
@@ -192,62 +180,73 @@ export default function Home() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.25 }}
-            variants={scaleIn(0.2)}
+            variants={fadeIn("up")}
           >
-            <div className="max-w-6xl mx-auto bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl">
+            <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center bg-blue-900/80 p-10 rounded-2xl backdrop-blur-sm border border-blue-400/20 shadow-2xl">
+              {/* Textual Content */}
               <motion.div
+                className="space-y-6"
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true }}
-                variants={fadeIn("up", 0.2)}
+                variants={slideIn("left")}
               >
-                <div className="inline-block rounded-lg bg-blue-500/20 px-4 py-2 text-sm text-blue-300 mb-6">
+                <div className="inline-block rounded-lg bg-blue-500/20 px-4 py-2 text-sm text-blue-300">
                   AI Trends
                 </div>
-                <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl mb-6">
+                <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">
                   Smart Financial Insights
                 </h2>
-                <p className="text-blue-100 text-lg mb-8">
+                <p className="text-blue-100 text-lg">
                   Our AI analyzes your spending patterns to provide personalized insights and recommendations.
                 </p>
-                <div className="flex justify-center">
-                  <Image
-                    src="/trends.png"
-                    width={1000}
-                    height={600}
-                    alt="AI Trends Preview"
-                    className="rounded-xl border border-blue-400/20 shadow-lg"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
-                    whileHover={{ y: -10 }}
+                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20"
+                    whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <TrendingUp className="h-8 w-8 text-blue-400 mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Pattern Recognition</h3>
-                    <p className="text-blue-200">AI identifies spending patterns and suggests optimizations</p>
+                    <TrendingUp className="h-7 w-7 text-blue-400 mb-3" />
+                    <h3 className="text-xl font-semibold mb-1">Pattern Recognition</h3>
+                    <p className="text-blue-200 text-sm">AI identifies spending patterns</p>
                   </motion.div>
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
-                    whileHover={{ y: -10 }}
+                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20"
+                    whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <BarChart3 className="h-8 w-8 text-blue-400 mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Predictive Analytics</h3>
-                    <p className="text-blue-200">Forecast future expenses based on historical data</p>
+                    <BarChart3 className="h-7 w-7 text-blue-400 mb-3" />
+                    <h3 className="text-xl font-semibold mb-1">Predictive Analytics</h3>
+                    <p className="text-blue-200 text-sm">Forecast future expenses</p>
                   </motion.div>
                   <motion.div 
-                    className="bg-blue-800/80 rounded-xl p-6 backdrop-blur-sm border border-blue-400/20"
-                    whileHover={{ y: -10 }}
+                    className="bg-blue-800/80 rounded-xl p-6 border border-blue-400/20 sm:col-span-2"
+                    whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <PieChart className="h-8 w-8 text-blue-400 mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Smart Budgeting</h3>
-                    <p className="text-blue-200">AI-powered budget recommendations tailored to your goals</p>
+                    <PieChart className="h-7 w-7 text-blue-400 mb-3" />
+                    <h3 className="text-xl font-semibold mb-1">Smart Budgeting</h3>
+                    <p className="text-blue-200 text-sm">AI-powered budget recommendations</p>
                   </motion.div>
                 </div>
+              </motion.div>
+
+              {/* AI Trends Image Preview */}
+              <motion.div 
+                className="relative"
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={slideIn("right")}
+              >
+                <Image
+                  src="/trends.png"
+                  width={600}
+                  height={400}
+                  alt="AI Trends Preview"
+                  className="rounded-xl border border-blue-400/20 shadow-lg mx-auto"
+                />
               </motion.div>
             </div>
           </motion.section>
@@ -417,16 +416,16 @@ export default function Home() {
             viewport={{ once: true, amount: 0.25 }}
             variants={scaleIn(0.5)}
           >
-            <div className="max-w-4xl mx-auto bg-emerald-600/80 backdrop-blur-sm rounded-2xl p-12 border border-emerald-400/20 text-center">
+            <div className="max-w-4xl mx-auto bg-blue-900/80 backdrop-blur-sm rounded-2xl p-12 border border-blue-400/20 text-center">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
                 Ready to Take Control of Your Finances?
               </h2>
-              <p className="text-emerald-200 text-lg mb-8">
+              <p className="text-blue-200 text-lg mb-8">
                 Sign up today and let AI simplify your budget management.
               </p>
               <Button 
                 size="lg" 
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 rounded-full text-lg shadow-lg"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-full text-lg shadow-lg"
                 onClick={() => window.location.href = '/signup'}
               >
                 Sign Up Now
