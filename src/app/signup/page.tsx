@@ -5,8 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -15,28 +14,78 @@ export default function Signup() {
   const [firstName, setFirstName] = useState('');
   const [surname, setSurname] = useState('');
   const [gender, setGender] = useState('');
+  const [dob, setDob] = useState({ day: '', month: '', year: '' });
   const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '' });
   const [emailExists, setEmailExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [dob, setDob] = useState({ day: '', month: '', year: '' });
-  const [months, setMonths] = useState([
-    { value: 'Jan', label: 'January' },
-    { value: 'Feb', label: 'February' },
-    { value: 'Mar', label: 'March' },
-    { value: 'Apr', label: 'April' },
-    { value: 'May', label: 'May' },
-    { value: 'Jun', label: 'June' },
-    { value: 'Jul', label: 'July' },
-    { value: 'Aug', label: 'August' },
-    { value: 'Sep', label: 'September' },
-    { value: 'Oct', label: 'October' },
-    { value: 'Nov', label: 'November' },
-    { value: 'Dec', label: 'December' }
-  ]);
+
   const currentDate = new Date();
+
+  const months = [
+    { value: 'Jan', label: 'January', days: 31 },
+    { value: 'Feb', label: 'February', days: 28 },
+    { value: 'Mar', label: 'March', days: 31 },
+    { value: 'Apr', label: 'April', days: 30 },
+    { value: 'May', label: 'May', days: 31 },
+    { value: 'Jun', label: 'June', days: 30 },
+    { value: 'Jul', label: 'July', days: 31 },
+    { value: 'Aug', label: 'August', days: 31 },
+    { value: 'Sep', label: 'September', days: 30 },
+    { value: 'Oct', label: 'October', days: 31 },
+    { value: 'Nov', label: 'November', days: 30 },
+    { value: 'Dec', label: 'December', days: 31 }
+  ];
+
+  const getDaysInMonth = (month: string, year: string) => {
+    const monthObj = months.find(m => m.value === month);
+    if (!monthObj) return [];
+    const isLeap = month === 'Feb' && parseInt(year) % 4 === 0;
+    const days = isLeap ? 29 : monthObj.days;
+    return Array.from({ length: days }, (_, i) => i + 1);
+  };
+
+  const handleDateChange = (type: 'day' | 'month' | 'year', value: string) => {
+    const newDob = { ...dob, [type]: value };
+
+    // If year is selected, check if it's a future year
+    if (type === 'year' && value) {
+      const selectedYear = parseInt(value);
+      const currentYear = currentDate.getFullYear();
+      if (selectedYear > currentYear) {
+        toast.error('Please select a year in the past');
+        return;
+      }
+    }
+
+    // If month is selected, check if it's a future month for the current year
+    if (type === 'month' && value && newDob.year === currentDate.getFullYear().toString()) {
+      const selectedMonth = months.findIndex(m => m.value === value);
+      const currentMonth = currentDate.getMonth();
+      if (selectedMonth > currentMonth) {
+        toast.error('Please select a month in the past');
+        return;
+      }
+    }
+
+    // If all date components are selected, validate the complete date
+    if (newDob.day && newDob.month && newDob.year) {
+      const selectedDate = new Date(
+        parseInt(newDob.year),
+        months.findIndex(m => m.value === newDob.month),
+        parseInt(newDob.day)
+      );
+
+      if (selectedDate > currentDate) {
+        toast.error('Please select a date in the past');
+        return;
+      }
+    }
+
+    setDob(newDob);
+  };
 
   const getPasswordStrength = () => {
     if (!password) return { level: '', color: '' };
@@ -59,6 +108,11 @@ export default function Signup() {
 
       if (!gender) {
         toast.error('Please select your gender');
+        return;
+      }
+
+      if (!dob.day || !dob.month || !dob.year) {
+        toast.error('Please enter a valid date of birth');
         return;
       }
 
@@ -140,31 +194,22 @@ export default function Signup() {
     }
   };
 
-  const handleDateChange = (type: 'day' | 'month' | 'year', value: string) => {
-    const newDob = { ...dob, [type]: value };
-    
-    // Validate date
-    const selectedDate = new Date(
-      parseInt(newDob.year),
-      months.findIndex(m => m.value === newDob.month),
-      parseInt(newDob.day)
-    );
-
-    const today = new Date();
-    
-    if (selectedDate > today) {
-      toast.error('Date of birth cannot be in the future');
-      return;
-    }
-
-    setDob(newDob);
-    toast.success('Date of birth updated');
-  };
-
   useEffect(() => {
     const validateEmail = async () => {
-      // ... email validation logic
+      if (!email) {
+        setEmailValidation({ isValid: false, message: '' });
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailValidation({ isValid: false, message: 'Invalid email format' });
+        return;
+      }
+
+      setEmailValidation({ isValid: true, message: '' });
     };
+
     const timeoutId = setTimeout(validateEmail, 500);
     return () => clearTimeout(timeoutId);
   }, [email]);
@@ -192,31 +237,71 @@ export default function Signup() {
 
           {/* First Name & Surname */}
           <div className="flex gap-3 mb-3">
-            <input type="text" placeholder="First name" className="bg-white text-black p-3 w-full rounded border" />
-            <input type="text" placeholder="Surname" className="bg-white text-black p-3 w-full rounded border" />
+            <input 
+              type="text" 
+              placeholder="First name" 
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)} 
+              className="bg-white text-black p-3 w-full rounded border" 
+            />
+            <input 
+              type="text" 
+              placeholder="Surname" 
+              value={surname} 
+              onChange={(e) => setSurname(e.target.value)} 
+              className="bg-white text-black p-3 w-full rounded border" 
+            />
           </div>
 
           {/* DOB */}
           <label className="text-white/80 mb-1 block">Date of Birth</label>
           <div className="flex gap-3 mb-3">
-            <select className="bg-white text-black p-2 rounded w-1/3 border">
-              {Array.from({ length: 31 }, (_, i) => <option key={i}>{i + 1}</option>)}
+            <select 
+              value={dob.day} 
+              onChange={(e) => handleDateChange('day', e.target.value)} 
+              className="bg-white text-black p-2 rounded w-1/3 border"
+            >
+              <option value="">Day</option>
+              {getDaysInMonth(dob.month, dob.year).map(day => (
+                <option key={day} value={day}>{day}</option>
+              ))}
             </select>
-            <select className="bg-white text-black p-2 rounded w-1/3 border">
-              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(m => <option key={m}>{m}</option>)}
+            <select 
+              value={dob.month} 
+              onChange={(e) => handleDateChange('month', e.target.value)} 
+              className="bg-white text-black p-2 rounded w-1/3 border"
+            >
+              <option value="">Month</option>
+              {months.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
             </select>
-            <select className="bg-white text-black p-2 rounded w-1/3 border">
-              {Array.from({ length: 100 }, (_, i) => <option key={i}>{2025 - i}</option>)}
+            <select 
+              value={dob.year} 
+              onChange={(e) => handleDateChange('year', e.target.value)} 
+              className="bg-white text-black p-2 rounded w-1/3 border"
+            >
+              <option value="">Year</option>
+              {Array.from({ length: 100 }, (_, i) => (
+                <option key={2025 - i} value={2025 - i}>{2025 - i}</option>
+              ))}
             </select>
           </div>
 
           {/* Gender */}
           <label className="text-white/80 mb-1 block">Gender</label>
           <div className="flex gap-6 mb-4">
-            {["Female", "Male", "Custom"].map(gender => (
-              <label key={gender} className="flex items-center gap-2">
-                <input type="radio" name="gender" className="accent-blue-700" />
-                {gender}
+            {["Female", "Male", "Custom"].map(g => (
+              <label key={g} className="flex items-center gap-2">
+                <input 
+                  type="radio" 
+                  name="gender" 
+                  value={g} 
+                  checked={gender === g} 
+                  onChange={(e) => setGender(e.target.value)} 
+                  className="accent-blue-700" 
+                />
+                {g}
               </label>
             ))}
           </div>
@@ -226,12 +311,17 @@ export default function Signup() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={e => {
+            onChange={(e) => {
               setEmail(e.target.value);
               setEmailExists(false);
             }}
             className="bg-white text-black p-3 w-full rounded border mb-3"
           />
+          {emailExists && (
+            <p className="text-red-200 text-sm mb-3">
+              This email is already registered. Please use a different email.
+            </p>
+          )}
 
           {/* Password */}
           <div className="relative">
@@ -239,7 +329,7 @@ export default function Signup() {
               type={showPassword ? "text" : "password"}
               placeholder="New password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="bg-white text-black p-3 w-full rounded border mb-1"
             />
             <button
@@ -261,7 +351,7 @@ export default function Signup() {
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm password"
               value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="bg-white text-black p-3 w-full rounded border pr-10"
             />
             <button
