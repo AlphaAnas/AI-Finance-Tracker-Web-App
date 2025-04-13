@@ -1,20 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from 'src/app/firebase.js';
+import { auth } from '../firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [gender, setGender] = useState('');
+  const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '' });
   const [emailExists, setEmailExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [dob, setDob] = useState({ day: '', month: '', year: '' });
+  const [months, setMonths] = useState([
+    { value: 'Jan', label: 'January' },
+    { value: 'Feb', label: 'February' },
+    { value: 'Mar', label: 'March' },
+    { value: 'Apr', label: 'April' },
+    { value: 'May', label: 'May' },
+    { value: 'Jun', label: 'June' },
+    { value: 'Jul', label: 'July' },
+    { value: 'Aug', label: 'August' },
+    { value: 'Sep', label: 'September' },
+    { value: 'Oct', label: 'October' },
+    { value: 'Nov', label: 'November' },
+    { value: 'Dec', label: 'December' }
+  ]);
+  const currentDate = new Date();
 
   const getPasswordStrength = () => {
+    if (!password) return { level: '', color: '' };
     if (password.length < 6) return { level: 'Weak', color: 'red' };
     if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { level: 'Medium', color: 'orange' };
     if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password))
@@ -25,28 +50,124 @@ export default function Signup() {
   const isPasswordMatch = password && confirmPassword && password === confirmPassword;
 
   const handleSignup = async () => {
-    if (password !== confirmPassword) return toast.error('Passwords do not match');
-    if (!email || !password || !confirmPassword) return toast.error('All fields are required');
-
-    setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      toast.success('Account created! Redirecting...');
-      setTimeout(() => (window.location.href = '/'), 2000);
+      // Validate all fields
+      if (!firstName.trim() || !surname.trim()) {
+        toast.error('Please enter your full name');
+        return;
+      }
+
+      if (!gender) {
+        toast.error('Please select your gender');
+        return;
+      }
+
+      if (!email || !emailValidation.isValid) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+
+      if (!password || password.length < 8) {
+        toast.error('Password must be at least 8 characters long');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+
+      const passwordStrength = getPasswordStrength();
+      if (passwordStrength.level === 'Weak') {
+        toast.error('Please choose a stronger password');
+        return;
+      }
+
+      setLoading(true);
+
+      // Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save additional user data
+      const userData = {
+        uid: user.uid,
+        email,
+        firstName: firstName.trim(),
+        surname: surname.trim(),
+        dob: `${dob.day} ${dob.month} ${dob.year}`,
+        gender,
+        createdAt: new Date().toISOString(),
+      };
+
+      const response = await fetch('/api/save-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save user data');
+      }
+
+      toast.success('Account created successfully!');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+
     } catch (error: any) {
+      console.error('Signup error:', error);
+      
+      const errorMessages: Record<string, string> = {
+        'auth/email-already-in-use': 'This email is already registered',
+        'auth/invalid-email': 'Invalid email address',
+        'auth/weak-password': 'Password is too weak',
+      };
+      
+      const errorMessage = errorMessages[error?.code] || 'Failed to create account. Please try again.';
+
       if (error.code === 'auth/email-already-in-use') {
         setEmailExists(true);
         setShake(true);
         setTimeout(() => setShake(false), 500);
-        toast.error('Email already exists');
-      } else {
-        toast.error('Signup failed');
-        console.error('Signup error:', error.message);
       }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleDateChange = (type: 'day' | 'month' | 'year', value: string) => {
+    const newDob = { ...dob, [type]: value };
+    
+    // Validate date
+    const selectedDate = new Date(
+      parseInt(newDob.year),
+      months.findIndex(m => m.value === newDob.month),
+      parseInt(newDob.day)
+    );
+
+    const today = new Date();
+    
+    if (selectedDate > today) {
+      toast.error('Date of birth cannot be in the future');
+      return;
+    }
+
+    setDob(newDob);
+    toast.success('Date of birth updated');
+  };
+
+  useEffect(() => {
+    const validateEmail = async () => {
+      // ... email validation logic
+    };
+    const timeoutId = setTimeout(validateEmail, 500);
+    return () => clearTimeout(timeoutId);
+  }, [email]);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-screen">
@@ -113,26 +234,44 @@ export default function Signup() {
           />
 
           {/* Password */}
-          <input
-            type="password"
-            placeholder="New password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="bg-white text-black p-3 w-full rounded border mb-1"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="New password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="bg-white text-black p-3 w-full rounded border mb-1"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {password && (
             <p className="text-sm mb-2" style={{ color: getPasswordStrength().color }}>
               Strength: {getPasswordStrength().level}
             </p>
           )}
 
-          <input
-            type="password"
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            className="bg-white text-black p-3 w-full rounded border mb-1"
-          />
+          <div className="relative mb-3">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              className="bg-white text-black p-3 w-full rounded border pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {confirmPassword && (
             <p className={`text-sm mb-4 ${isPasswordMatch ? 'text-green-200' : 'text-red-200'}`}>
               {isPasswordMatch ? "Passwords match" : "Passwords do not match"}
