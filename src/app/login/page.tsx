@@ -10,12 +10,14 @@ import {
 import { auth } from 'src/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 
 const provider = new GoogleAuthProvider();
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
 
@@ -87,13 +89,22 @@ export default function Home() {
         />
 
         {!resetMode && (
-          <input
-            type="password"
-            placeholder="at least 8 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mb-2 p-3 rounded w-full text-black bg-white border"
-          />
+          <div className="relative mb-2">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="at least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 rounded w-full text-black bg-white border pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         )}
 
         {!resetMode && (
@@ -136,7 +147,7 @@ export default function Home() {
             </button>
 
             <p className="mt-4 text-white/70 text-left text-sm">
-              Don’t have an account? <a href="/signup" className="underline">Signup</a>
+              Don't have an account? <a href="/signup" className="underline">Signup</a>
             </p>
 
             <button
