@@ -15,7 +15,7 @@ export default function Signup() {
   const [surname, setSurname] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState({ day: '', month: '', year: '' });
-  const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '' });
+  const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '', checking: false });
   const [emailExists, setEmailExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
@@ -152,6 +152,7 @@ export default function Signup() {
         dob: `${dob.day} ${dob.month} ${dob.year}`,
         gender,
         createdAt: new Date().toISOString(),
+        emailValidated: emailValidation.isValid,
       };
 
       const response = await fetch('/api/save-user', {
@@ -197,20 +198,33 @@ export default function Signup() {
   useEffect(() => {
     const validateEmail = async () => {
       if (!email) {
-        setEmailValidation({ isValid: false, message: '' });
+        setEmailValidation({ isValid: false, message: '', checking: false });
         return;
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setEmailValidation({ isValid: false, message: 'Invalid email format' });
-        return;
-      }
+      setEmailValidation(prev => ({ ...prev, checking: true }));
+      try {
+        const response = await fetch('/api/validate-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
 
-      setEmailValidation({ isValid: true, message: '' });
+        const data = await response.json();
+        setEmailValidation({ ...data, checking: false });
+      } catch (error) {
+        console.error('Email validation error:', error);
+        setEmailValidation({ 
+          isValid: false, 
+          message: 'Error validating email',
+          checking: false
+        });
+      }
     };
 
-    const timeoutId = setTimeout(validateEmail, 500);
+    const timeoutId = setTimeout(validateEmail, 800);
     return () => clearTimeout(timeoutId);
   }, [email]);
 
@@ -307,21 +321,31 @@ export default function Signup() {
           </div>
 
           {/* Email */}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setEmailExists(false);
-            }}
-            className="bg-white text-black p-3 w-full rounded border mb-3"
-          />
-          {emailExists && (
-            <p className="text-red-200 text-sm mb-3">
-              This email is already registered. Please use a different email.
-            </p>
-          )}
+          <div className="mb-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailExists(false);
+              }}
+              className="bg-white text-black p-3 w-full rounded border"
+            />
+            {emailValidation.checking && (
+              <p className="text-white/80 text-sm mt-1">Validating email...</p>
+            )}
+            {!emailValidation.checking && email && emailValidation.message && (
+              <p className={`text-sm mt-1 ${emailValidation.isValid ? 'text-green-200' : 'text-red-200'}`}>
+                {emailValidation.message}
+              </p>
+            )}
+            {emailExists && (
+              <p className="text-red-200 text-sm mt-1">
+                This email is already registered. Please use a different email.
+              </p>
+            )}
+          </div>
 
           {/* Password */}
           <div className="relative">
@@ -370,9 +394,9 @@ export default function Signup() {
 
           <button
             onClick={handleSignup}
-            disabled={emailExists || loading}
+            disabled={!!(emailExists || loading || (email && !emailValidation.isValid && !emailValidation.checking))}
             className={`p-3 rounded w-full font-semibold mb-4 ${
-              emailExists || loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
+              emailExists || loading || (email && !emailValidation.isValid && !emailValidation.checking) ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
             }`}
           >
             {loading ? 'Creating Account...' : 'Sign Up'}
