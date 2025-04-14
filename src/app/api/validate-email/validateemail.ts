@@ -13,6 +13,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ isValid: false, message: 'Email is required' });
   }
 
+  // Basic email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      isValid: false,
+      message: 'Invalid email format'
+    });
+  }
+
   try {
     const apiRes = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=${ABSTRACT_API_KEY}&email=${encodeURIComponent(email)}`);
     
@@ -41,13 +50,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ isValid: false, message: 'Email cannot receive messages' });
     }
 
-    return res.status(200).json({ isValid: false, message: 'Email verification uncertain' });
+    // CHANGED: Accept emails with uncertain verification but valid format
+    return res.status(200).json({ isValid: true, message: 'Email format is valid' });
 
   } catch (error) {
     console.error('Validation error:', error);
     return res.status(500).json({
-      isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+      isValid: emailRegex.test(email),
       message: 'Validation failed — fallback to basic check',
     });
-}
+  }
 }

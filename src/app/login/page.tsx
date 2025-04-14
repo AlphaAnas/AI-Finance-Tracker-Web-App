@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail, 
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth } from 'src/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const provider = new GoogleAuthProvider();
 
@@ -20,6 +22,33 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const router = useRouter();
+
+  // Reset any error when email or password changes
+  useEffect(() => {
+    setEmailError('');
+  }, [email, password]);
+
+  // Check if the user is already logged in
+  useEffect(() => {
+    console.log("Setting up auth listener in Login page");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User already logged in:", user.email);
+        toast.success(`Already logged in as ${user.email}`);
+        router.push('/dashboard');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  // Validate email format
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -32,19 +61,53 @@ export default function Home() {
   };
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      toast.error('Please fill in all fields');
+    // Reset error states
+    setEmailError('');
+    
+    // Validate email format
+    if (!email) {
+      setEmailError('Email is required');
+      toast.error('Please enter your email');
       return;
     }
+
+    if (!isValidEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    if (!password) {
+      toast.error('Please enter your password');
+      return;
+    }
+
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log(`Attempting login with email: ${email}`);
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       toast.success('Login successful!');
       console.log("Logged in:", userCredential.user);
-      setTimeout(() => window.location.href = "/dashboard", 1500);
+      
+      // Use Next.js router to navigate
+      router.push('/dashboard');
     } catch (error: any) {
-      console.error("Login error:", error.message);
-      toast.error('Invalid email or password.');
+      console.error("Login error:", error.message, error.code);
+      
+      // More specific error messages based on Firebase error codes
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+        setEmailError('Invalid email or password');
+        toast.error('Invalid email or password');
+      } else if (error.code === 'auth/user-not-found') {
+        setEmailError('No account found with this email');
+        toast.error('No account found with this email');
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error('Incorrect password');
+      } else if (error.code === 'auth/too-many-requests') {
+        toast.error('Too many failed login attempts. Please try again later');
+      } else {
+        toast.error(`Login error: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +119,9 @@ export default function Home() {
       const result = await signInWithPopup(auth, provider);
       toast.success('Google login successful!');
       console.log("Google signed in:", result.user);
-      setTimeout(() => window.location.href = "/dashboard", 1500);
+      
+      // Use Next.js router to navigate
+      router.push('/dashboard');
     } catch (error: any) {
       console.error("Google login error:", error.message);
       toast.error('Google login failed.');
@@ -94,14 +159,17 @@ export default function Home() {
         <h2 className="text-3xl font-semibold mb-2">{resetMode ? 'Reset Password' : 'Welcome'}</h2>
         <p className="mb-6">{resetMode ? 'Enter your registered email' : 'Start Managing Your Finance Faster and better'}</p>
 
-        <input
-          type="email"
-          placeholder="example@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="mb-3 p-3 rounded w-full text-black bg-white border"
-        />
+        <div className="mb-3">
+          <input
+            type="email"
+            placeholder="example@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className={`p-3 rounded w-full text-black bg-white border ${emailError ? 'border-red-500' : ''}`}
+          />
+          {emailError && <p className="text-red-300 text-sm mt-1">{emailError}</p>}
+        </div>
 
         {!resetMode && (
           <div className="relative mb-2">
@@ -166,13 +234,6 @@ export default function Home() {
             <p className="mt-4 text-white/70 text-left text-sm">
               Don't have an account? <a href="/signup" className="underline">Signup</a>
             </p>
-
-            <button
-              onClick={() => window.location.href = "/dashboard"}
-              className="mt-6 bg-white text-blue-700 font-bold px-6 py-2 rounded border border-blue-700 hover:bg-blue-100 transition"
-            >
-              Go to Random Page →
-            </button>
           </>
         )}
 

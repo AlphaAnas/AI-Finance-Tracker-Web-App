@@ -47,10 +47,16 @@ export async function POST(request: Request) {
         return NextResponse.json({ isValid: false, message: 'Please enter an existing email' });
       }
 
-      return NextResponse.json({ isValid: false, message: 'Email verification uncertain' });
+      // CHANGED: Accept emails with uncertain verification but valid format
+      // This allows users to sign up even when the API can't give a definitive answer
+      return NextResponse.json({ 
+        isValid: true, 
+        message: 'Email format is valid' 
+      });
 
     } catch (error) {
       console.error('Abstract API error:', error);
+      // Fallback to basic validation if the API call fails
       return NextResponse.json({
         isValid: emailRegex.test(email),
         message: 'Validation failed — fallback to basic check'

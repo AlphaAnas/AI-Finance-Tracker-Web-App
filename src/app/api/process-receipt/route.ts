@@ -40,6 +40,11 @@ Do not provide any other text or explanations.
 If you are unable to find any fields, provide an empty JSON object.
 All rows of items must be grouped together.`;
 
+
+
+// This function basically sends the image to the Google Gemini API and gets the response back.
+// It then parses the response and stores it in Firestore.
+// The function is called when the user uploads a receipt image in the frontend.
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
