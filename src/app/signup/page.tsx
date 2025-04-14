@@ -6,7 +6,7 @@ import { auth } from '../firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
-
+import axios from 'axios';
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -203,6 +203,7 @@ export default function Signup() {
       }
 
       setEmailValidation(prev => ({ ...prev, checking: true }));
+      
       try {
         const response = await fetch('/api/validate-email', {
           method: 'POST',
@@ -212,18 +213,27 @@ export default function Signup() {
           body: JSON.stringify({ email }),
         });
 
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
         const data = await response.json();
         setEmailValidation({ ...data, checking: false });
       } catch (error) {
         console.error('Email validation error:', error);
+        // Fall back to basic validation
+        const basicRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = basicRegex.test(email);
+        
         setEmailValidation({ 
-          isValid: false, 
-          message: 'Error validating email',
+          isValid, 
+          message: isValid ? 'Email format looks valid (validation service unavailable)' : 'Invalid email format',
           checking: false
         });
       }
     };
 
+    // Debounce email validation to avoid excessive API calls
     const timeoutId = setTimeout(validateEmail, 800);
     return () => clearTimeout(timeoutId);
   }, [email]);
