@@ -152,7 +152,7 @@ export default function TransactionsPage() {
       setIsProcessing(true);
       const formData = new FormData();
       formData.append('file', file);
-
+      debugger;
       const response = await fetch('/api/process-receipt', {
         method: 'POST',
         body: formData,
