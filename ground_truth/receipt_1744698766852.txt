@@ -1,0 +1,29 @@
+{
+  "InvoiceNumber": "US-001",
+  "Items": [
+    {
+      "ItemName": "Front and rear brake cables",
+      "Price": 100,
+      "Quantity": 1,
+      "Total": 100
+    },
+    {
+      "ItemName": "New set of pedal arms",
+      "Price": 15,
+      "Quantity": 2,
+      "Total": 30
+    },
+    {
+      "ItemName": "Labor 3hrs",
+      "Price": 5,
+      "Quantity": 3,
+      "Total": 15
+    }
+  ],
+  "InvoiceDate": "11/02/2019",
+  "TotalAmount": 154.06,
+  "VendorName": "East Repair Inc.",
+  "PaymentMethod": "check",
+  "InvoiceType": "Invoice",
+  "GSTAmount": 9.06
+}

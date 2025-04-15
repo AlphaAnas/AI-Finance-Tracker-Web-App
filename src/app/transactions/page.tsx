@@ -171,6 +171,17 @@ export default function TransactionsPage() {
           amountInput.value = result.data.TotalAmount.toString();
         }
       }
+
+
+      // await fetch('/api/save-transaction', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(result.data),
+      // });
+      
+
     } catch (error) {
       console.error('Error processing receipt:', error);
       toast.error('Failed to process receipt. Please ensure the image is valid.');
@@ -179,120 +190,120 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleManualFormSubmit = async (formData: FormData): Promise<Transaction | null> => {
-      const amount = parseFloat(formData.get('amount') as string);
+  // const handleManualFormSubmit = async (formData: FormData): Promise<Transaction | null> => {
+  //     const amount = parseFloat(formData.get('amount') as string);
   
-      if (isNaN(amount) || amount < 0) {
-        toast.error('Please enter a valid amount.');
-        setIsSubmitting(false);
-        return null;
-      }
+  //     if (isNaN(amount) || amount < 0) {
+  //       toast.error('Please enter a valid amount.');
+  //       setIsSubmitting(false);
+  //       return null;
+  //     }
 
-    try {
-      const newTransaction = {
-        id: `TRX-${Date.now()}`,
-        account: formData.get('account') as string,
-        date: formData.get('date') as string,
-        status: formData.get('type') as 'incoming' | 'outgoing',
-        amount: amount,
-        category: formData.get('category') as string,
-        description: formData.get('description') as string
-      };
+  //   try {
+  //     const newTransaction = {
+  //       id: `TRX-${Date.now()}`,
+  //       account: formData.get('account') as string,
+  //       date: formData.get('date') as string,
+  //       status: formData.get('type') as 'incoming' | 'outgoing',
+  //       amount: amount,
+  //       category: formData.get('category') as string,
+  //       description: formData.get('description') as string
+  //     };
 
-      await fetch('/api/save-transaction', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          InvoiceNumber: newTransaction.id.replace('TRX-', ''),
-          InvoiceDate: newTransaction.date,
-          TotalAmount: newTransaction.amount,
-          VendorName: newTransaction.category,
-          Description: newTransaction.description
-        }),
-      });
+  //     await fetch('/api/save-transaction', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         InvoiceNumber: newTransaction.id.replace('TRX-', ''),
+  //         InvoiceDate: newTransaction.date,
+  //         TotalAmount: newTransaction.amount,
+  //         VendorName: newTransaction.category,
+  //         Description: newTransaction.description
+  //       }),
+  //     });
 
-      return newTransaction;
-    } catch (error) {
-      console.error('Error submitting transaction:', error);
-      toast.error('Failed to add transaction. Please try again.');
-      return null;
-    }
-  };
+  //     return newTransaction;
+  //   } catch (error) {
+  //     console.error('Error submitting transaction:', error);
+  //     toast.error('Failed to add transaction. Please try again.');
+  //     return null;
+  //   }
+  // };
 
-  const handleImageFormSubmit = async (formData: FormData) => {
-    try {
-      const response = await fetch('/api/process-receipt', {
-        method: 'POST',
-        body: formData,
-      });
+  // const handleImageFormSubmit = async (formData: FormData) => {
+  //   try {
+  //     const response = await fetch('/api/process-receipt', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
 
-      if (!response.ok) {
-        throw new Error('Failed to process receipt');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to process receipt');
+  //     }
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      const newTransaction = {
-        id: result.data.InvoiceNumber?.toString() || `TRX-${Date.now()}`,
-        account: 'checking',
-        date: result.data.InvoiceDate || new Date().toISOString().split('T')[0],
-        status: 'outgoing' as 'incoming' | 'outgoing',
-        amount: result.data.TotalAmount || 0,
-        category: 'other',
-        description: `Receipt from ${result.data.VendorName || 'Unknown Vendor'}`,
-        vendor: result.data.VendorName,
-        invoiceType: result.data.InvoiceType,
-        gstAmount: result.data.GSTAmount,
-        items: result.data.Items
-      };
+  //     const newTransaction = {
+  //       id: result.data.InvoiceNumber?.toString() || `TRX-${Date.now()}`,
+  //       account: 'checking',
+  //       date: result.data.InvoiceDate || new Date().toISOString().split('T')[0],
+  //       status: 'outgoing' as 'incoming' | 'outgoing',
+  //       amount: result.data.TotalAmount || 0,
+  //       category: 'other',
+  //       description: `Receipt from ${result.data.VendorName || 'Unknown Vendor'}`,
+  //       vendor: result.data.VendorName,
+  //       invoiceType: result.data.InvoiceType,
+  //       gstAmount: result.data.GSTAmount,
+  //       items: result.data.Items
+  //     };
 
-      await fetch('/api/save-transaction', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result.data),
-      });
+  //     await fetch('/api/save-transaction', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(result.data),
+  //     });
 
-      return newTransaction;
-    } catch (error) {
-      console.error('Error submitting transaction:', error);
-      toast.error('Failed to add transaction. Please try again.');
-      return null;
-    }
-  };
+  //     return newTransaction;
+  //   } catch (error) {
+  //     console.error('Error submitting transaction:', error);
+  //     toast.error('Failed to add transaction. Please try again.');
+  //     return null;
+  //   }
+  // };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
 
-    const loadingToast = toast.loading('Adding transaction...');
+  //   const loadingToast = toast.loading('Adding transaction...');
 
-    try {
-      let newTransaction: Transaction | null = null;
-      const formData = new FormData(e.target as HTMLFormElement);
+  //   try {
+  //     let newTransaction: Transaction | null = null;
+  //     const formData = new FormData(e.target as HTMLFormElement);
 
-      if (transactionType === 'manual') {
-        newTransaction = await handleManualFormSubmit(formData);
-      } else if (transactionType === 'image' && selectedImage) {
-        formData.append('file', selectedImage);
-        newTransaction = await handleImageFormSubmit(formData);
-      }
+  //     if (transactionType === 'manual') {
+  //       newTransaction = await handleManualFormSubmit(formData);
+  //     } else if (transactionType === 'image' && selectedImage) {
+  //       formData.append('file', selectedImage);
+  //       newTransaction = await handleImageFormSubmit(formData);
+  //     }
 
-      if (newTransaction) {
-        await fetchTransactions();
-        toast.success('Transaction added successfully!', { id: loadingToast });
-        setIsAddTransactionOpen(false);
-        setSelectedImage(null);
-        setImagePreview(null);
-        setExtractedData(null);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     if (newTransaction) {
+  //       await fetchTransactions();
+  //       toast.success('Transaction added successfully!', { id: loadingToast });
+  //       setIsAddTransactionOpen(false);
+  //       setSelectedImage(null);
+  //       setImagePreview(null);
+  //       setExtractedData(null);
+  //     }
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const indexOfLastTransaction = currentPage * TRANSACTIONS_PER_PAGE;
   const indexOfFirstTransaction = indexOfLastTransaction - TRANSACTIONS_PER_PAGE;
@@ -326,7 +337,7 @@ export default function TransactionsPage() {
                   <TabsTrigger value="image" className="py-2 px-4 hover:bg-gray-200">Upload Receipt</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual">
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form  className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="amount" className="text-gray-800">Amount</Label>
@@ -395,7 +406,7 @@ export default function TransactionsPage() {
                   </form>
                 </TabsContent>
                 <TabsContent value="image">
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form  className="space-y-4">
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-white text-gray-800">
                       {isProcessing ? (
                         <div className="space-y-2">
