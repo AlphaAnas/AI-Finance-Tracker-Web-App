@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { auth } from '@/app/firebase'; // adjust path if needed
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+
+
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -16,6 +20,8 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
+
+
 
 // Prompt for invoice parsing
 const prompt = `You are an expert invoice parser.
@@ -48,10 +54,15 @@ All rows of items must be grouped together.`;
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
+    
     const file = formData.get('file') as File;
+    
+    const userId = formData.get('userId') as string;
+    const userName = formData.get('userName') as string;
+    const userEmail = formData.get('userEmail') as string;
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    if (!file || !userId) {
+      return NextResponse.json({ error: 'No file or user ID provided' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -78,6 +89,14 @@ export async function POST(request: Request) {
       console.error('JSON parse error:', error);
       return NextResponse.json({ error: 'Failed to parse JSON' }, { status: 500 });
     }
+
+    // add the user ID to the extracted data
+    extractedData = {
+      ...extractedData,
+      userId: userId, // add user ID if available
+    }
+
+
 
     // 🔥 Store the parsed data in Firestore
     await addDoc(collection(db, 'transactions'), {
