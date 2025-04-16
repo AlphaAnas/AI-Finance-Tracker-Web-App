@@ -27,9 +27,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast, Toaster } from 'react-hot-toast';
+import { auth } from "@/app/firebase"; // adjust path if needed
+import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 interface Transaction {
   id: string;
+  userid: string;
   account: string;
   date: string;
   status: "incoming" | "outgoing";
@@ -46,9 +50,18 @@ interface Transaction {
   }>;
 }
 
+interface User {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+}
+
 const TRANSACTIONS_PER_PAGE = 5;
 
 export default function TransactionsPage() {
+
+
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateSort, setDateSort] = useState("desc");
@@ -64,6 +77,7 @@ export default function TransactionsPage() {
   const [extractedData, setExtractedData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [user, setUser] = useState<User | null>(null);
 
   const fetchTransactions = async () => {
     try {
@@ -85,7 +99,34 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
+
+  
   }, []);
+
+
+
+
+
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        console.log("Redirecting to login");
+        toast.error('Session expired. Please log in again.');
+        // sleep for 5 sec
+        setTimeout(() => {
+          toast.dismiss();
+        }, 5000);
+        const router = useRouter();
+        router.push('/login');
+
+      }
+    });
+  
+    return () => unsubscribe();
+  }, []);
+
 
   const filteredTransactions = transactions
     .filter(transaction => {
@@ -151,8 +192,19 @@ export default function TransactionsPage() {
     try {
       setIsProcessing(true);
       const formData = new FormData();
+      if (!user) {
+        console.error('Unexpected null user on Dashboard.');
+        toast.error('User not found. Please log in again.');
+        return;
+      }
+      
+      formData.append('userId', user.uid);
+      formData.append('userName', user.displayName || '');
+      formData.append('userEmail', user.email || '');
       formData.append('file', file);
-      debugger;
+
+
+
       const response = await fetch('/api/process-receipt', {
         method: 'POST',
         body: formData,
@@ -391,10 +443,6 @@ export default function TransactionsPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="vendor" className="text-gray-800">Spent On</Label>
-                      <Input id="vendor" name="vendor" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" placeholder="Enter place of purchase" />
-                    </div>
-                    <div className="space-y-2">
                       <Label htmlFor="description" className="text-gray-800">Description</Label>
                       <Input id="description" name="description" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" placeholder="Enter transaction description" />
                     </div>
@@ -579,9 +627,6 @@ export default function TransactionsPage() {
                 <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
-                  Vendor
-                </th>
                 <th className="px-8 py-4 text-right text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Amount
                 </th>
@@ -590,19 +635,19 @@ export default function TransactionsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-700">
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
                     Loading transactions...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-red-600">
+                  <td colSpan={5} className="px-6 py-8 text-center text-red-600">
                     {error}
                   </td>
                 </tr>
               ) : currentTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-700">
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
                     No transactions found
                   </td>
                 </tr>
@@ -634,9 +679,6 @@ export default function TransactionsPage() {
                           <><FaArrowUp className="mr-1" /> Outgoing</>
                         )}
                       </span>
-                    </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
-                      {transaction.vendor || '-'}
                     </td>
                     <td className={`px-8 py-5 whitespace-nowrap text-sm font-medium text-right ${
                       transaction.status === 'incoming' ? 'text-green-600' : 'text-red-600'
@@ -682,3 +724,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+// Removed the conflicting local function declaration
