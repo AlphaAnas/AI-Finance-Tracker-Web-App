@@ -11,12 +11,35 @@ import {
 import { auth } from 'src/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { LampContainer } from '@/components/ui/lamp';
+import Link from 'next/link';
 
 const provider = new GoogleAuthProvider();
 
-export default function Home() {
+const fadeIn = (direction = "up", delay = 0) => {
+  return {
+    hidden: {
+      opacity: 0,
+      y: direction === "up" ? 40 : direction === "down" ? -40 : 0,
+      x: direction === "left" ? 40 : direction === "right" ? -40 : 0,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      x: 0,
+      transition: {
+        type: "spring",
+        delay,
+        duration: 0.8,
+      },
+    },
+  }
+}
+
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +59,9 @@ export default function Home() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("User already logged in:", user.email);
-        toast.success(`Already logged in as ${user.email}`);
-        router.push('/dashboard');
+        // Remove the automatic redirect
+        // toast.success(`Already logged in as ${user.email}`);
+        // router.push('/dashboard');
       }
     });
 
@@ -144,108 +168,169 @@ export default function Home() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-screen">
-      {/* Logo Section */}
-      <div className="flex-1 bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl font-bold text-[#3b82f6] mb-1">Expense</h1>
-          <p className="text-4xl font-bold text-[#3b82f6] mb-4">Tracker</p>
-          <img src="/logo.png" alt="Logo" className="h-60" />
-        </div>
-      </div>
+    <div className="flex flex-col min-h-screen overflow-x-hidden relative bg-gradient-to-b from-blue-950 via-blue-900 to-blue-950 text-white">
+      {/* Subtle Lamp Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-950/50 via-blue-900/50 to-blue-950/50 z-0" />
+      
+      {/* Fixed LampContainer */}
+      <LampContainer className="fixed top-0 left-0 w-full h-full -z-10 opacity-30">
+        <div className="h-full w-full bg-transparent"></div>
+      </LampContainer>
 
-      {/* Form Section */}
-      <div className="flex-1 bg-blue-500 text-white flex flex-col justify-center px-12">
-        <h2 className="text-3xl font-semibold mb-2">{resetMode ? 'Reset Password' : 'Welcome'}</h2>
-        <p className="mb-6">{resetMode ? 'Enter your registered email' : 'Start Managing Your Finance Faster and better'}</p>
-
-        <div className="mb-3">
-          <input
-            type="email"
-            placeholder="example@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className={`p-3 rounded w-full text-black bg-white border ${emailError ? 'border-red-500' : ''}`}
-          />
-          {emailError && <p className="text-red-300 text-sm mt-1">{emailError}</p>}
-        </div>
-
-        {!resetMode && (
-          <div className="relative mb-2">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="at least 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="p-3 rounded w-full text-black bg-white border pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              tabIndex={-1}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-        )}
-
-        {!resetMode && (
-          <a onClick={() => setResetMode(true)} className="text-sm mb-4 text-right text-white/70 cursor-pointer">Forgot password?</a>
-        )}
-
-        <button
-          onClick={resetMode ? handlePasswordReset : handleLogin}
-          disabled={loading}
-          className={`p-3 rounded w-full font-semibold mb-4 ${
-            loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-800 hover:bg-blue-900"
-          }`}
+      {/* Main Content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={fadeIn("up")}
+          className="w-full max-w-md"
         >
-          {loading ? (resetMode ? "Sending..." : "Logging in...") : (resetMode ? "Send Reset Link" : "Login")}
-        </button>
-
-        {!resetMode && (
-          <>
-            <div className="flex items-center mb-4">
-              <hr className="flex-grow border-white/50" />
-              <span className="mx-2">or</span>
-              <hr className="flex-grow border-white/50" />
+          <div className="bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl">
+            {/* Logo Section */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-[#3b82f6]">Expense</h1>
+              <p className="text-4xl font-bold text-[#3b82f6] mb-4">TRACKER</p>
+              <img src="/logo.png" alt="Logo" className="h-32 mx-auto mb-8" />
+              <h2 className="text-4xl font-bold bg-gradient-to-br from-blue-300 to-blue-500 bg-clip-text text-transparent">
+                Welcome Back
+              </h2>
+              <p className="text-blue-200 mt-2">
+                {resetMode ? 'Enter your registered email' : 'Sign in to continue'}
+              </p>
             </div>
 
-            <button
-              onClick={signInWithGoogle}
+            {/* Email Input */}
+            <div className="mb-4">
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={`w-full p-3 rounded-lg bg-blue-800/50 border border-blue-400/20 text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  emailError ? 'border-red-500' : ''
+                }`}
+              />
+              {emailError && (
+                <p className="text-red-400 text-sm mt-1">{emailError}</p>
+              )}
+            </div>
+
+            {/* Password Input */}
+            {!resetMode && (
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="w-full p-3 rounded-lg bg-blue-800/50 border border-blue-400/20 text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300/50 hover:text-blue-300"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            )}
+
+            {/* Forgot Password Link */}
+            {!resetMode && (
+              <div className="text-right mb-6">
+                <button
+                  onClick={() => setResetMode(true)}
+                  className="text-blue-300/70 hover:text-blue-300 text-sm"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            {/* Login/Reset Button */}
+            <Button
+              onClick={resetMode ? handlePasswordReset : handleLogin}
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-white text-black p-3 rounded border border-gray-300 mb-2"
+              className={`w-full py-6 rounded-lg text-lg font-semibold ${
+                loading ? 'bg-blue-600/50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="google" className="h-5 w-5" />
-              Sign in with Google
-            </button>
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  {resetMode ? 'Sending...' : 'Logging in...'}
+                </div>
+              ) : resetMode ? (
+                'Send Reset Link'
+              ) : (
+                'Login'
+              )}
+            </Button>
 
-            <button
-              onClick={() => toast("Facebook Sign-in is currently disabled.")}
-              className="flex items-center justify-center gap-2 bg-white text-black p-3 rounded border border-gray-300"
-            >
-              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="facebook" className="h-5 w-5" />
-              Sign in with Facebook
-            </button>
+            {/* Social Login */}
+            {!resetMode && (
+              <>
+                <div className="flex items-center my-6">
+                  <hr className="flex-grow border-blue-400/20" />
+                  <span className="mx-4 text-blue-300/50">or</span>
+                  <hr className="flex-grow border-blue-400/20" />
+                </div>
 
-            <p className="mt-4 text-white/70 text-left text-sm">
-              Don't have an account? <a href="/signup" className="underline">Signup</a>
-            </p>
-          </>
-        )}
+                <div className="space-y-3">
+                  <Button
+                    onClick={signInWithGoogle}
+                    disabled={loading}
+                    className="w-full py-6 rounded-lg text-lg font-semibold bg-white text-blue-900 hover:bg-blue-50"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="google"
+                      className="h-5 w-5 mr-2"
+                    />
+                    Sign in with Google
+                  </Button>
 
-        {resetMode && (
-          <p
-            className="mt-4 text-white/70 text-left text-sm cursor-pointer underline"
-            onClick={() => setResetMode(false)}
-          >
-            Go back to login
-          </p>
-        )}
+                  <Button
+                    onClick={() => toast("Facebook Sign-in is currently disabled.")}
+                    className="w-full py-6 rounded-lg text-lg font-semibold bg-white text-blue-900 hover:bg-blue-50"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475647/facebook-color.svg"
+                      alt="facebook"
+                      className="h-5 w-5 mr-2"
+                    />
+                    Sign in with Facebook
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Sign Up Link */}
+            {!resetMode && (
+              <p className="text-center mt-6 text-blue-300/70">
+                Don't have an account?{' '}
+                <Link href="/signup" className="text-blue-300 hover:text-blue-200 underline">
+                  Sign up
+                </Link>
+              </p>
+            )}
+
+            {/* Back to Login Link */}
+            {resetMode && (
+              <p className="text-center mt-6 text-blue-300/70">
+                <button
+                  onClick={() => setResetMode(false)}
+                  className="text-blue-300 hover:text-blue-200 underline"
+                >
+                  Back to login
+                </button>
+              </p>
+            )}
+          </div>
+        </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 }
