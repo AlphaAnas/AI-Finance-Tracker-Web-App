@@ -29,7 +29,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast, Toaster } from 'react-hot-toast';
 import { auth } from "@/app/firebase"; // adjust path if needed
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "next/navigation";
+
+import {redirect} from 'next/navigation';
 
 interface Transaction {
   id: string;
@@ -59,7 +60,8 @@ interface User {
 const TRANSACTIONS_PER_PAGE = 5;
 
 export default function TransactionsPage() {
-
+  
+  
 
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -79,14 +81,24 @@ export default function TransactionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState<User | null>(null);
 
+
   const fetchTransactions = async () => {
     try {
+      if (!user) {
+        console.warn("User not authenticated yet, skipping transaction fetch.");
+        return;
+      }
+  
       setIsLoading(true);
-      const response = await fetch('/api/transactions');
+      process.stdout.write(`[${new Date().toISOString()}] Fetching transactions for user ID: ${user.uid}\n`);
+      console.log(`Fetching transactions for user ID: ${user.uid}`);
+      const response = await fetch(`/api/transactions?uid=${user.uid}`);
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
+  
       const data = await response.json();
       setTransactions(data);
     } catch (err) {
@@ -96,17 +108,7 @@ export default function TransactionsPage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchTransactions();
-
   
-  }, []);
-
-
-
-
-
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -114,19 +116,23 @@ export default function TransactionsPage() {
       if (!currentUser) {
         console.log("Redirecting to login");
         toast.error('Session expired. Please log in again.');
-        // sleep for 5 sec
+        // sleep for 2 sec
         setTimeout(() => {
           toast.dismiss();
-        }, 5000);
-        const router = useRouter();
-        router.push('/login');
-
+        }, 1000);
+        redirect("/login");
       }
     });
-  
+    
     return () => unsubscribe();
   }, []);
+  
+  
+  useEffect(() => {
+    fetchTransactions();
 
+  
+  }, []);
 
   const filteredTransactions = transactions
     .filter(transaction => {
@@ -224,14 +230,6 @@ export default function TransactionsPage() {
         }
       }
 
-
-      // await fetch('/api/save-transaction', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(result.data),
-      // });
       
 
     } catch (error) {
