@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LampContainer } from '@/components/ui/lamp';
 import Link from 'next/link';
+import { UserData } from '../api/profile/userDataService';
 
 const fadeIn = (direction = "up", delay = 0) => {
   return {
@@ -161,28 +163,19 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      const userData = {
+      const userData: UserData = {
         uid: user.uid,
         email,
         firstName: firstName.trim(),
         surname: surname.trim(),
         dob: `${dob.day} ${dob.month} ${dob.year}`,
         gender,
+        currentBalance: 0, // Initialize current balance to zero
         createdAt: new Date().toISOString(),
         emailValidated: emailValidation.isValid,
       };
 
-      const response = await fetch('/api/save-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save user data');
-      }
+      await setDoc(doc(db, 'users', user.uid), userData);
 
       toast.success('Account created successfully!');
       setTimeout(() => {
