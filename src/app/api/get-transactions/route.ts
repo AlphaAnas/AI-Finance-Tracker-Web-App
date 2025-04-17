@@ -1,25 +1,55 @@
 import { NextResponse } from 'next/server';
 import { collection, getDocs } from 'firebase/firestore';
+import { query, where } from 'firebase/firestore';
 import { db } from 'src/app/firebase'; // adjust this path based on your structure
 
-export async function GET() {
+
+
+
+
+export async function GET(request: Request) {
   try {
-    const snapshot = await getDocs(collection(db, 'transactions'));
+    // Use process.stdout.write for terminal logging in Next.js API routes
+    process.stdout.write(`[${new Date().toISOString()}] API: Transactions request received\n`);
+    
+    // Extract search parameters
+    const { searchParams } = new URL(request.url);
+    const uid = searchParams.get('uid');
+    if (!uid || typeof uid !== 'string') {
+      return NextResponse.json({ error: 'Invalid UID provided' }, { status: 400 });
+    }
+    
+  
+
+    
+    // Query only transactions for the specific user
+    const q = query(collection(db, 'transactions'), where('userId', '==', uid));
+   
+    
+    const snapshot = await getDocs(q);
+
 
     if (snapshot.empty) {
-      console.error('No invoices found in Firestore');
-      return NextResponse.json({ error: 'No invoices found' }, { status: 404 });
+      process.stdout.write(`[${new Date().toISOString()}] API ERROR: No transactions found for user ID: ${uid}\n`);
+      return NextResponse.json({ error: 'No transactions found' }, { status: 404 });
     }
 
+    process.stdout.write(`[${new Date().toISOString()}] API: Processing transaction documents...\n`);
     const transactions = snapshot.docs
       .map(doc => {
         const data = doc.data();
-        if (!data) return null;
+        const docId = doc.id;
+        process.stdout.write(`[${new Date().toISOString()}] API: Processing document ${docId}\n`);
+        
+        if (!data) {
+          process.stdout.write(`[${new Date().toISOString()}] API WARNING: Empty data for document ${docId}\n`);
+          return null;
+        }
 
-        return {
+        return { // returns all the data from the document
           id: `TRX-${data.InvoiceNumber || Math.floor(Math.random() * 10000)}`,
           account: "Main Checking",
-          date: data.InvoiceDate || '1970-01-01',
+          date: data.InvoiceDate || 'No Invoice Date Found!',
           status: "outgoing",
           amount: data.TotalAmount || 0,
           category: data.VendorName || "Uncategorized",
@@ -33,15 +63,18 @@ export async function GET() {
       .filter((tx): tx is NonNullable<typeof tx> => tx !== null)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+    process.stdout.write(`[${new Date().toISOString()}] API: Returning ${transactions.length} processed transactions\n`);
     return NextResponse.json(transactions);
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    process.stdout.write(`[${new Date().toISOString()}] API ERROR: Error fetching transactions: ${error instanceof Error ? error.message : String(error)}\n`);
     return NextResponse.json({
       error: 'Failed to fetch transactions',
       details: error instanceof Error ? error.message : String(error),
     }, { status: 500 });
   }
 }
+
+
 
 //  OLD CODE TO GET LOCAL INVOICES 
 

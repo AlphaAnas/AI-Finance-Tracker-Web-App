@@ -1,5 +1,5 @@
 import { FaShoppingCart, FaHome, FaCar } from "react-icons/fa";
-
+import Link from "next/link";
 const budgets = [
   { title: "Groceries", spent: 350, remaining: 150, total: 500, color: "text-blue-500", icon: <FaShoppingCart /> },
   { title: "Rent", spent: 1200, remaining: 0, total: 1200, color: "text-purple-500", icon: <FaHome /> },
@@ -11,7 +11,7 @@ export default function BudgetOverview() {
     <div className="bg-white p-5 rounded-lg shadow-md">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold  text-black">Budget Overview</h2>
-        <a href="#" className="text-blue-600 hover:underline">View all →</a>
+        <Link href="/budgets" className="text-blue-600 hover:underline">View all →</Link>
       </div>
       <div className="mt-4">
         {budgets.map((budget, index) => {

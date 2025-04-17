@@ -14,12 +14,12 @@ export default function Sidebar() {
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       <div className="p-5 pb-2">
         <div className="flex items-center gap-3">
-          <Link href="/landingpage">
+          <Link href="/login">
             <button className="flex items-center text-sm bg-transparent hover:bg-gray-800 py-1 px-1 rounded transition-colors duration-200">
               <FaArrowLeft size={12} />
             </button>
           </Link>
-          <Link href="/landingpage">
+          <Link href="/login">
             <h2 className="text-2xl font-bold cursor-pointer">MaaliMunshi</h2>
           </Link>
         </div>
