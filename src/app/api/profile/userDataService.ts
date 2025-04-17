@@ -11,6 +11,7 @@ export interface UserData {
   currency?: string;
   timezone?: string;
   emailNotifications?: boolean;
+  emailValidated?: boolean;
   darkMode?: boolean;
   createdAt?: string;
   uid: string;
