@@ -147,11 +147,7 @@ const ProfilePage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Loading profile...</div>
-          <div className="w-12 h-12 rounded-full border-4 border-t-blue-500 border-b-purple-500 border-r-transparent border-l-transparent animate-spin mx-auto"></div>
+   
         </div>
       </div>
     );
