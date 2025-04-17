@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { collection, getDocs } from 'firebase/firestore';
 import { query, where } from 'firebase/firestore';
 import { db } from 'src/app/firebase'; // adjust this path based on your structure
+
+
+
+
+
 export async function GET(request: Request) {
   try {
     // Use process.stdout.write for terminal logging in Next.js API routes
@@ -41,10 +46,10 @@ export async function GET(request: Request) {
           return null;
         }
 
-        return {
+        return { // returns all the data from the document
           id: `TRX-${data.InvoiceNumber || Math.floor(Math.random() * 10000)}`,
           account: "Main Checking",
-          date: data.InvoiceDate || '1970-01-01',
+          date: data.InvoiceDate || 'No Invoice Date Found!',
           status: "outgoing",
           amount: data.TotalAmount || 0,
           category: data.VendorName || "Uncategorized",

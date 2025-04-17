@@ -170,6 +170,7 @@ export default function Signup() {
         surname: surname.trim(),
         dob: `${dob.day} ${dob.month} ${dob.year}`,
         gender,
+        currentBalance: 0, // Initialize current balance to zero
         createdAt: new Date().toISOString(),
         emailValidated: emailValidation.isValid,
       };
