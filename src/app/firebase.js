@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 
 // const firebaseConfig = {
 //   apiKey: process.env.FIREBASE_API_KEY,
@@ -12,14 +12,13 @@ import { getAuth } from 'firebase/auth';
 //   appId: process.env.FIREBASE_APP_ID,
 // };
 const firebaseConfig = {
-  apiKey: "AIzaSyDOTvHTgbe3vCmyOt-JCHy81JV3Qvt6oLA",
-  authDomain: "ai-finance-tracker-bfb8b.firebaseapp.com",
-  databaseURL: "https://ai-finance-tracker-bfb8b-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ai-finance-tracker-bfb8b",
-  storageBucket: "ai-finance-tracker-bfb8b.firebasestorage.app",
-  messagingSenderId: "98030943514",
-  appId: "1:98030943514:web:0e5fe97a07b3a9414780a3",
-  measurementId: "G-BB314VXLP6"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 
@@ -27,5 +26,17 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
-export { db, auth };
+// Configure Google Auth Provider
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
+// Configure Facebook Auth Provider
+facebookProvider.setCustomParameters({
+  'display': 'popup'
+});
+
+export { db, auth, googleProvider, facebookProvider };

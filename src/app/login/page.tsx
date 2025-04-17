@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail, 
   onAuthStateChanged
 } from 'firebase/auth';
-import { auth } from 'src/app/firebase';
+import { auth, googleProvider, facebookProvider } from '@/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -154,6 +154,23 @@ export default function LoginPage() {
     }
   };
 
+  const signInWithFacebook = async () => {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      if (result.user) {
+        toast.success("Facebook login successful!");
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Facebook login error:", error);
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        toast.error("An account already exists with the same email address but different sign-in credentials. Please try a different sign-in method.");
+      } else {
+        toast.error(error.message || "Failed to login with Facebook");
+      }
+    }
+  };
+
   const handlePasswordReset = async () => {
     if (!email) return toast.error("Please enter your registered email");
     setLoading(true);
@@ -293,8 +310,9 @@ export default function LoginPage() {
                   </Button>
 
                   <Button
-                    onClick={() => toast("Facebook Sign-in is currently disabled.")}
-                    className="w-full py-6 rounded-lg text-lg font-semibold bg-white text-blue-900 hover:bg-blue-50"
+                    onClick={signInWithFacebook}
+                    disabled={loading}
+                    className="w-full py-6 rounded-lg text-lg font-semibold bg-[#1877F2] text-white hover:bg-[#1865F2]"
                   >
                     <img
                       src="https://www.svgrepo.com/show/475647/facebook-color.svg"
