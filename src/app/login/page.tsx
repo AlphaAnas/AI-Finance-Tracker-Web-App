@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail, 
   onAuthStateChanged
 } from 'firebase/auth';
-import { auth } from 'src/app/firebase';
+import { auth, googleProvider } from 'src/app/firebase';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -138,19 +138,15 @@ export default function LoginPage() {
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
-      toast.success('Google login successful!');
-      console.log("Google signed in:", result.user);
-      
-      // Use Next.js router to navigate
-      router.push('/dashboard');
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+        toast.success("Google login successful!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
-      console.error("Google login error:", error.message);
-      toast.error('Google login failed.');
-    } finally {
-      setLoading(false);
+      console.error("Google login error:", error);
+      toast.error(error.message || "Failed to login with Google");
     }
   };
 
