@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { collection, getDocs } from 'firebase/firestore';
 import { query, where } from 'firebase/firestore';
 import { db } from 'src/app/firebase'; // adjust this path based on your structure
-
 export async function GET(request: Request) {
   try {
     // Use process.stdout.write for terminal logging in Next.js API routes
@@ -11,24 +10,19 @@ export async function GET(request: Request) {
     // Extract search parameters
     const { searchParams } = new URL(request.url);
     const uid = searchParams.get('uid');
-
-    process.stdout.write(`[${new Date().toISOString()}] API: Request URL: ${request.url}\n`);
-    process.stdout.write(`[${new Date().toISOString()}] API: Search parameters: ${JSON.stringify(Object.fromEntries(searchParams.entries()))}\n`);
-    process.stdout.write(`[${new Date().toISOString()}] API: User ID extracted: ${uid}\n`);
-
-    if (!uid) {
-      process.stdout.write(`[${new Date().toISOString()}] API ERROR: User ID not provided in request\n`);
-      return NextResponse.json({ error: 'User ID not provided' }, { status: 400 });
+    if (!uid || typeof uid !== 'string') {
+      return NextResponse.json({ error: 'Invalid UID provided' }, { status: 400 });
     }
+    
+  
 
-    process.stdout.write(`[${new Date().toISOString()}] API: Querying transactions for user: ${uid}\n`);
     
     // Query only transactions for the specific user
-    const q = query(collection(db, 'transactions'), where('uid', '==', uid));
-    process.stdout.write(`[${new Date().toISOString()}] API: Query created, fetching documents...\n`);
+    const q = query(collection(db, 'transactions'), where('userId', '==', uid));
+   
     
     const snapshot = await getDocs(q);
-    process.stdout.write(`[${new Date().toISOString()}] API: Query returned ${snapshot.size} documents\n`);
+
 
     if (snapshot.empty) {
       process.stdout.write(`[${new Date().toISOString()}] API ERROR: No transactions found for user ID: ${uid}\n`);

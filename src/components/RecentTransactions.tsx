@@ -1,4 +1,5 @@
 import { FaCheckCircle } from "react-icons/fa";
+import Link from 'next/link';
 
 const transactions = [
   { title: "Grocery Store", amount: -89.5, category: "Groceries", date: "Today", status: "Completed" },
@@ -11,7 +12,7 @@ export default function RecentTransactions() {
     <div className="bg-white p-5 rounded-lg shadow-md">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold  text-black">Recent Transactions</h2>
-        <a href="#" className="text-blue-600 hover:underline">View all →</a>
+        <Link href="/transactions" className="text-blue-600 hover:underline">View all →</Link>
       </div>
       <div className="mt-4">
         {transactions.map((tx, index) => (
