@@ -120,7 +120,35 @@ export default function TransactionsPage() {
         : [...prev, id]
     );
   };
-
+  const exportToCSV = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions available to export.");
+      return;
+    }
+  
+    const headers = ["Transaction ID", "Account", "Date", "Status", "Amount", "Category", "Description"];
+    const rows = transactions.map(transaction => [
+      transaction.id,
+      transaction.account,
+      new Date(transaction.date).toLocaleDateString('en-US'),
+      transaction.status,
+      transaction.amount.toFixed(2),
+      transaction.category,
+      transaction.description,
+    ]);
+  
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(value => `"${value}"`).join(","))
+      .join("\n");
+  
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const fileName = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
+  
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+  };
   const toggleSelectAll = () => {
     if (selectedTransactions.length === filteredTransactions.length) {
       setSelectedTransactions([]);
@@ -516,7 +544,7 @@ export default function TransactionsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <button className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
+          <button className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300" onClick={exportToCSV}>
             <FaFileExport /> Export
           </button>
         </div>
@@ -524,13 +552,13 @@ export default function TransactionsPage() {
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="relative flex-1">
-            <input type="text" placeholder="Search transactions..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Search transactions..." className="w-full pl-10 pr-4 py-2 border border-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 text-black" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800" />
           </div>
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
               <span className="text-gray-800">Status:</span>
-              <select className="border border-gray-300 rounded-md px-3 py-2" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <select className="border border-gray-800 rounded-md px-3 py-2 text-black" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="all">All</option>
                 <option value="incoming">Incoming</option>
                 <option value="outgoing">Outgoing</option>
