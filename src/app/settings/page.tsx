@@ -3,12 +3,11 @@
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { auth } from "@/app/firebase";
-import { db } from "@/app/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { UserData } from "@/app/api/profile/userDataService";
 
 interface User {
   uid: string;
@@ -17,21 +16,6 @@ interface User {
   phoneNumber: string | null;
   photoURL: string | null;
   emailVerified: boolean;
-}
-
-interface UserData {
-  firstName: string;
-  surname: string;
-  email: string;
-  gender: string;
-  dob: string;
-  location?: string;
-  currency?: string;
-  timezone?: string;
-  emailNotifications?: boolean;
-  darkMode?: boolean;
-  createdAt?: string;
-  uid: string;
 }
 
 const ProfilePage = () => {
@@ -76,14 +60,12 @@ const ProfilePage = () => {
   const fetchUserData = async (uid: string) => {
     setIsLoading(true);
     try {
-      // First try to find user by uid
-      const q = query(collection(db, "users"), where("uid", "==", uid));
-      const querySnapshot = await getDocs(q);
+      // Use the API to fetch user data
+      const response = await fetch(`/api/profile?uid=${uid}`);
       
-      if (!querySnapshot.empty) {
-        // User found
-        const userDoc = querySnapshot.docs[0];
-        const data = userDoc.data() as UserData;
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data as UserData;
         setUserData(data);
         setFormData({
           firstName: data.firstName || "",
@@ -98,7 +80,7 @@ const ProfilePage = () => {
           darkMode: data.darkMode || false,
         });
       } else {
-        // No user found with this UID, will create when saving
+        // No user found, will create when saving
         console.log("No user data found, will create new record on save");
         if (user) {
           setFormData({
@@ -142,23 +124,22 @@ const ProfilePage = () => {
         createdAt: userData?.createdAt || new Date().toISOString(),
       };
 
-      // If user already exists, update the document, otherwise create new
-      if (userData) {
-        // Find the document ID
-        const q = query(collection(db, "users"), where("uid", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          await setDoc(doc(db, "users", userDoc.id), userDataToSave);
-        }
-      } else {
-        // Create new user document
-        await addDoc(collection(db, 'users'), userDataToSave);
-      }
+      // Use the API to update user data
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userDataToSave),
+      });
 
-      setUserData(userDataToSave as UserData);
-      toast.success('Profile updated successfully');
+      if (response.ok) {
+        setUserData(userDataToSave as UserData);
+        toast.success('Profile updated successfully');
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update profile');
+      }
     } catch (error) {
       console.error("Error saving profile:", error);
       toast.error('Failed to update profile');

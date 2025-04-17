@@ -30,7 +30,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import { auth } from "@/app/firebase"; // adjust path if needed
 import { onAuthStateChanged } from "firebase/auth";
 
-import {redirect} from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 interface Transaction {
   id: string;
@@ -60,10 +60,6 @@ interface User {
 const TRANSACTIONS_PER_PAGE = 5;
 
 export default function TransactionsPage() {
-  
-  
-
-
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateSort, setDateSort] = useState("desc");
@@ -81,24 +77,19 @@ export default function TransactionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState<User | null>(null);
 
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (userId: string) => {
     try {
-      if (!user) {
-        console.warn("User not authenticated yet, skipping transaction fetch.");
-        return;
-      }
-  
       setIsLoading(true);
-      process.stdout.write(`[${new Date().toISOString()}] Fetching transactions for user ID: ${user.uid}\n`);
-      console.log(`Fetching transactions for user ID: ${user.uid}`);
-      const response = await fetch(`/api/transactions?uid=${user.uid}`);
-      
+      setError(null);
+
+      console.log(`Fetching transactions for user ID: ${userId}`);
+      const response = await fetch(`/api/get-transactions?uid=${userId}`);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-  
+
       const data = await response.json();
       setTransactions(data);
     } catch (err) {
@@ -108,30 +99,26 @@ export default function TransactionsPage() {
       setIsLoading(false);
     }
   };
-  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
       if (!currentUser) {
         console.log("Redirecting to login");
         toast.error('Session expired. Please log in again.');
-        // sleep for 2 sec
         setTimeout(() => {
           toast.dismiss();
+          redirect("/login");
         }, 1000);
-        redirect("/login");
+        return;
       }
-    });
-    
-    return () => unsubscribe();
-  }, []);
-  
-  
-  useEffect(() => {
-    fetchTransactions();
 
-  
+      // Set user and fetch transactions within the same callback
+      // to avoid race conditions
+      setUser(currentUser);
+      fetchTransactions(currentUser.uid);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const filteredTransactions = transactions
@@ -195,21 +182,19 @@ export default function TransactionsPage() {
   };
 
   const processReceipt = async (file: File) => {
+    if (!user) {
+      toast.error('Please log in to process receipts');
+      return;
+    }
+
     try {
       setIsProcessing(true);
       const formData = new FormData();
-      if (!user) {
-        console.error('Unexpected null user on Dashboard.');
-        toast.error('User not found. Please log in again.');
-        return;
-      }
-      
+
       formData.append('userId', user.uid);
       formData.append('userName', user.displayName || '');
       formData.append('userEmail', user.email || '');
       formData.append('file', file);
-
-
 
       const response = await fetch('/api/process-receipt', {
         method: 'POST',
@@ -229,9 +214,6 @@ export default function TransactionsPage() {
           amountInput.value = result.data.TotalAmount.toString();
         }
       }
-
-      
-
     } catch (error) {
       console.error('Error processing receipt:', error);
       toast.error('Failed to process receipt. Please ensure the image is valid.');
@@ -239,121 +221,6 @@ export default function TransactionsPage() {
       setIsProcessing(false);
     }
   };
-
-  // const handleManualFormSubmit = async (formData: FormData): Promise<Transaction | null> => {
-  //     const amount = parseFloat(formData.get('amount') as string);
-  
-  //     if (isNaN(amount) || amount < 0) {
-  //       toast.error('Please enter a valid amount.');
-  //       setIsSubmitting(false);
-  //       return null;
-  //     }
-
-  //   try {
-  //     const newTransaction = {
-  //       id: `TRX-${Date.now()}`,
-  //       account: formData.get('account') as string,
-  //       date: formData.get('date') as string,
-  //       status: formData.get('type') as 'incoming' | 'outgoing',
-  //       amount: amount,
-  //       category: formData.get('category') as string,
-  //       description: formData.get('description') as string
-  //     };
-
-  //     await fetch('/api/save-transaction', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         InvoiceNumber: newTransaction.id.replace('TRX-', ''),
-  //         InvoiceDate: newTransaction.date,
-  //         TotalAmount: newTransaction.amount,
-  //         VendorName: newTransaction.category,
-  //         Description: newTransaction.description
-  //       }),
-  //     });
-
-  //     return newTransaction;
-  //   } catch (error) {
-  //     console.error('Error submitting transaction:', error);
-  //     toast.error('Failed to add transaction. Please try again.');
-  //     return null;
-  //   }
-  // };
-
-  // const handleImageFormSubmit = async (formData: FormData) => {
-  //   try {
-  //     const response = await fetch('/api/process-receipt', {
-  //       method: 'POST',
-  //       body: formData,
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('Failed to process receipt');
-  //     }
-
-  //     const result = await response.json();
-
-  //     const newTransaction = {
-  //       id: result.data.InvoiceNumber?.toString() || `TRX-${Date.now()}`,
-  //       account: 'checking',
-  //       date: result.data.InvoiceDate || new Date().toISOString().split('T')[0],
-  //       status: 'outgoing' as 'incoming' | 'outgoing',
-  //       amount: result.data.TotalAmount || 0,
-  //       category: 'other',
-  //       description: `Receipt from ${result.data.VendorName || 'Unknown Vendor'}`,
-  //       vendor: result.data.VendorName,
-  //       invoiceType: result.data.InvoiceType,
-  //       gstAmount: result.data.GSTAmount,
-  //       items: result.data.Items
-  //     };
-
-  //     await fetch('/api/save-transaction', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(result.data),
-  //     });
-
-  //     return newTransaction;
-  //   } catch (error) {
-  //     console.error('Error submitting transaction:', error);
-  //     toast.error('Failed to add transaction. Please try again.');
-  //     return null;
-  //   }
-  // };
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-
-  //   const loadingToast = toast.loading('Adding transaction...');
-
-  //   try {
-  //     let newTransaction: Transaction | null = null;
-  //     const formData = new FormData(e.target as HTMLFormElement);
-
-  //     if (transactionType === 'manual') {
-  //       newTransaction = await handleManualFormSubmit(formData);
-  //     } else if (transactionType === 'image' && selectedImage) {
-  //       formData.append('file', selectedImage);
-  //       newTransaction = await handleImageFormSubmit(formData);
-  //     }
-
-  //     if (newTransaction) {
-  //       await fetchTransactions();
-  //       toast.success('Transaction added successfully!', { id: loadingToast });
-  //       setIsAddTransactionOpen(false);
-  //       setSelectedImage(null);
-  //       setImagePreview(null);
-  //       setExtractedData(null);
-  //     }
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const indexOfLastTransaction = currentPage * TRANSACTIONS_PER_PAGE;
   const indexOfFirstTransaction = indexOfLastTransaction - TRANSACTIONS_PER_PAGE;
@@ -387,7 +254,7 @@ export default function TransactionsPage() {
                   <TabsTrigger value="image" className="py-2 px-4 hover:bg-gray-200">Upload Receipt</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual">
-                  <form  className="space-y-4">
+                  <form className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="amount" className="text-gray-800">Amount</Label>
@@ -456,7 +323,7 @@ export default function TransactionsPage() {
                   </form>
                 </TabsContent>
                 <TabsContent value="image">
-                  <form  className="space-y-4">
+                  <form className="space-y-4">
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-white text-gray-800">
                       {isProcessing ? (
                         <div className="space-y-2">
@@ -722,5 +589,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-// Removed the conflicting local function declaration

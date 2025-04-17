@@ -4,6 +4,11 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { auth } from '@/app/firebase'; // adjust path if needed
 
+
+
+// THIS API ROUTE IS FOR PARSING INVOICES USING GOOGLE GEMINI API AND SAVING THE DATA TO FIRESTORE
+
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 
