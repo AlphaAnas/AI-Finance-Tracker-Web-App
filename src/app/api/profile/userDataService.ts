@@ -7,6 +7,8 @@ export interface UserData {
   email: string;
   gender?: string;
   dob?: string;
+  totalBalance?: number;
+  currentBalance?: number;
   location?: string;
   currency?: string;
   timezone?: string;
