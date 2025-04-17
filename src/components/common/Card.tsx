@@ -17,9 +17,9 @@ export default function Card({ title, amount, percentage, isIncrease, icon, bord
         <span className="text-2xl">{icon}</span>
       </div>
       <p className="text-2xl font-bold text-black mt-2">{amount}</p>
-      <p className={`text-sm mt-1 ${isIncrease ? "text-green-500" : "text-red-500"}`}>
+      {/* <p className={`text-sm mt-1 ${isIncrease ? "text-green-500" : "text-red-500"}`}>
         {isIncrease ? "↑" : "↓"} {percentage} vs last month
-      </p>
+      </p> */}
     </div>
   );
 }

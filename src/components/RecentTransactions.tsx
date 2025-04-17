@@ -42,7 +42,7 @@ interface Transaction {
   userid: string;
   account: string;
   date: string;
-  status: "incoming" | "outgoing";
+  InvoiceType: "incoming" | "outgoing";
   amount: number;
   category: string;
   description: string;
@@ -144,8 +144,10 @@ const currentTransactions = transactions && transactions.length > 0
               <p className="text-gray-500 text-sm">{formatRelativeTime(tx.date)} • <FaCheckCircle className="inline text-green-500" /></p>
             </div>
             <div className="text-right">
-              <p className={`font-semibold text-red-400`}>
-                {`-$${Math.abs(tx.amount).toFixed(2)}`}
+              <p className={
+                `text-lg font-semibold ${tx.InvoiceType === "incoming" ? "text-green-600" : "text-red-600"}`
+                }>
+                {tx.InvoiceType === "incoming" ? "+" : "-"}Rs.{tx.amount.toFixed(2)}
               </p>
               <span className="text-gray-500 text-xs bg-gray-200 px-2 py-1 rounded">
               {tx.description ? 
