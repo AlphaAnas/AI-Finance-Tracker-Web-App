@@ -10,7 +10,8 @@ import {
   fetchSignInMethodsForEmail,
   linkWithCredential,
   EmailAuthProvider,
-  AuthError
+  AuthError,
+  FacebookAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider, facebookProvider } from '@/app/firebase';
 import toast from 'react-hot-toast';
@@ -142,12 +143,36 @@ export default function LoginPage() {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      // Clear any previous errors
+      setEmailError('');
+      
+      // Try signing in with Google
+      const result = await signInWithPopup(auth, googleProvider)
+        .catch((error) => {
+          if (error.code === 'auth/popup-closed-by-user') {
+            throw new Error('Sign-in cancelled by user');
+          }
+          throw error;
+        });
+
+      // Get the credential
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      
+      if (!credential) {
+        throw new Error('Failed to get credential from Google');
+      }
+
       toast.success('Google login successful!');
       router.push('/dashboard');
     } catch (error) {
       const authError = error as AuthError;
       console.error("Google login error:", authError);
+      
+      if (authError.message === 'Sign-in cancelled by user') {
+        // User cancelled, don't show error
+        console.log('Sign-in cancelled by user');
+        return;
+      }
       
       if (authError.code === 'auth/account-exists-with-different-credential') {
         const email = authError.customData?.email;
@@ -155,8 +180,15 @@ export default function LoginPage() {
           const methods = await fetchSignInMethodsForEmail(auth, email);
           toast.error(`This email is already used with ${methods[0]}. Please use that method to sign in.`);
         }
+      } else if (authError.code === 'auth/internal-error') {
+        toast.error('An error occurred. Please try again or use a different sign-in method.');
+      } else if (authError.code === 'auth/popup-blocked') {
+        toast.error('Sign-in popup was blocked. Please allow popups for this site.');
+      } else if (authError.code === 'auth/cancelled-popup-request') {
+        // Multiple popups were opened, no need to show error
+        console.log('Sign-in cancelled due to multiple popups');
       } else {
-        toast.error('Google login failed. Please try again.');
+        toast.error('Failed to sign in with Google. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -175,17 +207,53 @@ export default function LoginPage() {
       
       if (authError.code === 'auth/account-exists-with-different-credential') {
         try {
+          // Get the email from the error
           const email = authError.customData?.email;
           if (email) {
+            // Get existing providers for this email
             const methods = await fetchSignInMethodsForEmail(auth, email);
-            toast.error(`An account already exists with this email. Please sign in using ${methods.join(', ')}.`);
+            
+            if (methods.includes('google.com')) {
+              // If the user has previously signed in with Google, prompt them to sign in with Google
+              toast.error('This email is associated with a Google account. Please sign in with Google.');
+              
+              // You can optionally trigger Google sign-in automatically
+              try {
+                const googleResult = await signInWithPopup(auth, googleProvider);
+                if (googleResult.user) {
+                  // Now link the Facebook credential to this account
+                  const facebookCredential = FacebookAuthProvider.credentialFromError(authError);
+                  if (facebookCredential) {
+                    await linkWithCredential(googleResult.user, facebookCredential);
+                    toast.success('Successfully linked Facebook account!');
+                    router.push('/dashboard');
+                  }
+                }
+              } catch (linkError) {
+                console.error("Error linking accounts:", linkError);
+                toast.error('Failed to link accounts. Please try again.');
+              }
+            } else if (methods.includes('password')) {
+              // If the user has previously signed in with email/password
+              toast.error('This email is associated with an email/password account. Please sign in with email and password.');
+            } else {
+              toast.error(`This email is already associated with ${methods[0]}. Please use that sign-in method.`);
+            }
           }
         } catch (innerError) {
           console.error("Error handling credential conflict:", innerError);
-          toast.error("An error occurred while handling authentication");
+          toast.error("An error occurred while handling authentication. Please try a different sign-in method.");
         }
+      } else if (authError.code === 'auth/popup-closed-by-user') {
+        // User closed the popup, no need to show error
+        console.log('Login cancelled by user');
+      } else if (authError.code === 'auth/cancelled-popup-request') {
+        // Multiple popups were opened, no need to show error
+        console.log('Login cancelled due to multiple popups');
+      } else if (authError.code === 'auth/popup-blocked') {
+        toast.error('Login popup was blocked. Please allow popups for this site.');
       } else {
-        toast.error('Facebook login failed. Please try again.');
+        toast.error('Facebook login failed. Please try again or use a different sign-in method.');
       }
     } finally {
       setLoading(false);

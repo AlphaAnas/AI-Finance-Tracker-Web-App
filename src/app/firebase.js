@@ -3,16 +3,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 
-// const firebaseConfig = {
-//   apiKey: process.env.FIREBASE_API_KEY,
-//   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-//   projectId: process.env.FIREBASE_PROJECT_ID,
-//   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-//   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-//   appId: process.env.FIREBASE_APP_ID,
-// };
 const firebaseConfig = {
-  authDomain:"ai-finance-tracker-bfb8b.firebaseapp.com",
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -22,22 +13,42 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-
 // Initialize Firebase app only if it hasn't been initialized already
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app;
+try {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+}
+
+// Initialize services
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Configure Google Provider
 const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
-
-// Configure Google Auth Provider
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
+  prompt: 'select_account',
+  access_type: 'offline'
 });
 
-// Configure Facebook Auth Provider
+// Configure Facebook Provider
+const facebookProvider = new FacebookAuthProvider();
 facebookProvider.setCustomParameters({
-  'display': 'popup'
+  'display': 'popup',
+  'auth_type': 'reauthenticate',
+  'return_scopes': 'true'
 });
+
+// Add required scopes
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
+
+// Configure auth persistence
+auth.useDeviceLanguage();
 
 export { db, auth, googleProvider, facebookProvider };
