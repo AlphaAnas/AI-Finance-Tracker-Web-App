@@ -12,6 +12,7 @@ import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth
 //   appId: process.env.FIREBASE_APP_ID,
 // };
 const firebaseConfig = {
+  authDomain:"ai-finance-tracker-bfb8b.firebaseapp.com",
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
