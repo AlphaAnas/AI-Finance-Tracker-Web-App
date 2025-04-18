@@ -2,10 +2,15 @@ import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
   try {
+    // Get the private key and replace escaped newlines
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY 
+      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      : undefined;
+
     const serviceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      privateKey: privateKey,
     };
 
     // Validate service account fields
@@ -26,7 +31,11 @@ if (!admin.apps.length) {
     console.log('✅ Firebase Admin initialized successfully');
   } catch (error) {
     console.error('🔥 Firebase Admin initialization error:', error);
-    // Optional: don't re-throw to avoid build crash
+    // Don't re-throw to avoid build crash, but log the error
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Stack trace:', error.stack);
+    }
   }
 }
 
