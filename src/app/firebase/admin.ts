@@ -1,6 +1,5 @@
-import admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 
-// Check if Firebase admin is already initialized
 if (!admin.apps.length) {
   try {
     const serviceAccount = {
@@ -9,9 +8,9 @@ if (!admin.apps.length) {
       privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     };
 
-    // Validate required service account properties
+    // Validate service account fields
     if (!serviceAccount.privateKey || !serviceAccount.clientEmail || !serviceAccount.projectId) {
-      console.error('Missing Firebase service account credentials:', {
+      console.error('❌ Missing Firebase Admin credentials:', {
         hasPrivateKey: !!serviceAccount.privateKey,
         hasClientEmail: !!serviceAccount.clientEmail,
         hasProjectId: !!serviceAccount.projectId,
@@ -21,15 +20,16 @@ if (!admin.apps.length) {
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.FIREBASE_DATABASE_URL
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
     });
 
-    console.log('Firebase Admin initialized successfully');
+    console.log('✅ Firebase Admin initialized successfully');
   } catch (error) {
-    console.error('Firebase admin initialization error:', error);
-    // Don't throw here to allow the app to start, but log the error
+    console.error('🔥 Firebase Admin initialization error:', error);
+    // Optional: don't re-throw to avoid build crash
   }
 }
 
-export const db = admin.firestore();
-export default admin; 
+const db = admin.firestore();
+
+export { admin, db };

@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/firebase/admin';
 
+interface UserData {
+  uid: string;
+  [key: string]: any; // Allows additional user properties
+}
+
 export async function POST(request: Request) {
   try {
-    const userData = await request.json();
-    
+    const userData: UserData = await request.json();
+
     if (!userData || !userData.uid) {
       return NextResponse.json(
         { message: 'Invalid user data' },
@@ -20,11 +25,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save user data to Firestore
     await db.collection('users').doc(userData.uid).set({
       ...userData,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
 
     return NextResponse.json(
@@ -38,4 +42,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
