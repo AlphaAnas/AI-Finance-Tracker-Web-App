@@ -155,6 +155,63 @@ export default function TransactionsPage() {
         : [...prev, id]
     );
   };
+  const saveTransaction = async (transaction: Transaction) => {
+    if (!user) {
+      toast.error('Please log in to save transactions');
+      return;
+    }
+  
+    try {
+      setIsSubmitting(true);
+      console.log('Transaction being saved:', transaction); // Log the transaction data
+  
+      const response = await fetch('/api/save-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, transaction }),
+      });
+  
+      console.log('API Response:', response);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.error || 'Failed to save transaction');
+      }
+  
+      const { id } = await response.json();
+      console.log('Saved transaction ID:', id);
+  
+      toast.success('Transaction added successfully!');
+      setTransactions(prev => [...prev, { ...transaction, id }]);
+    } catch (error) {
+      console.error('Error saving transaction:', error);
+      toast.error('Failed to save transaction');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleManualSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  
+    const formData = new FormData(e.currentTarget);
+    const transaction: Transaction = {
+      id: '', // Will be set by the backend
+      userid: user?.uid || '',
+      account: formData.get('account') as string,
+      date: formData.get('date') as string,
+      status: formData.get('type') as 'incoming' | 'outgoing',
+      amount: parseFloat(formData.get('amount') as string) || 0, // Ensure amount is a valid number
+      category: formData.get('category') as string,
+      description: formData.get('description') as string,
+      vendor: formData.get('vendor') as string,
+    };
+  
+    console.log('Transaction to save:', transaction); // Log the transaction data
+  
+    await saveTransaction(transaction);
+    setIsAddTransactionOpen(false);
+  };
   const exportToCSV = () => {
     if (transactions.length === 0) {
       toast.error("No transactions available to export.");
@@ -283,7 +340,7 @@ export default function TransactionsPage() {
                   <TabsTrigger value="image" className="py-2 px-4 hover:bg-gray-200">Upload Receipt</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual">
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleManualSubmit}>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="amount" className="text-gray-800">Amount</Label>
@@ -351,10 +408,10 @@ export default function TransactionsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="date" className="text-gray-800">Date</Label>
-                      <Input id="date" name="date" type="date" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={extractedData?.InvoiceDate || new Date().toISOString().split('T')[0]} required />
+                      <Input id="date" name="date" type="date" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={new Date().toISOString().split('T')[0]} required />
                     </div>
                     <DialogFooter>
-                      <Button type="submit" onClick={() => setIsAddTransactionOpen(false)} disabled={isSubmitting} className="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">
+                      <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">
                         Add Transaction
                       </Button>
                     </DialogFooter>
