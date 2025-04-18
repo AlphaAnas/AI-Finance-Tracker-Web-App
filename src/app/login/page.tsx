@@ -22,6 +22,9 @@ import { Button } from '@/components/ui/button';
 import { LampContainer } from '@/components/ui/lamp';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { UserData } from '@/app/api/profile/userDataService';
+import { db } from '@/app/firebase';
 
 // Animation variants
 const fadeIn = (direction: "up" | "down" | "left" | "right" = "up", delay: number = 0) => {
@@ -162,6 +165,24 @@ export default function LoginPage() {
         throw new Error('Failed to get credential from Google');
       }
 
+      // Check if user exists in Firestore
+      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+      
+      if (!userDoc.exists()) {
+        // Create new user document in Firestore
+        const userData: UserData = {
+          uid: result.user.uid,
+          email: result.user.email || '',
+          firstName: result.user.displayName?.split(' ')[0] || '',
+          surname: result.user.displayName?.split(' ').slice(1).join(' ') || '',
+          currentBalance: 0,
+          createdAt: new Date().toISOString(),
+          emailValidated: true,
+        };
+
+        await setDoc(doc(db, 'users', result.user.uid), userData);
+      }
+
       toast.success('Google login successful!');
       router.push('/dashboard');
     } catch (error) {
@@ -187,6 +208,8 @@ export default function LoginPage() {
       } else if (authError.code === 'auth/cancelled-popup-request') {
         // Multiple popups were opened, no need to show error
         console.log('Sign-in cancelled due to multiple popups');
+      } else if (authError.code === 'auth/network-request-failed') {
+        toast.error('Network error. Please check your internet connection and try again.');
       } else {
         toast.error('Failed to sign in with Google. Please try again.');
       }
@@ -317,38 +340,38 @@ export default function LoginPage() {
                   className="object-contain"
                   priority
                 />
-              </div>
+        </div>
               <h2 className="text-4xl font-bold bg-gradient-to-br from-blue-300 to-blue-500 bg-clip-text text-transparent">
                 Welcome Back
               </h2>
               <p className="text-blue-200 mt-2">
                 {resetMode ? 'Enter your registered email' : 'Sign in to continue'}
               </p>
-            </div>
+      </div>
 
             <div className="mb-4">
-              <input
-                type="email"
+        <input
+          type="email"
                 placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className={`w-full p-3 rounded-lg bg-blue-800/50 border ${
                   emailError ? 'border-red-500' : 'border-blue-400/20'
                 } text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
+        />
               {emailError && (
                 <p className="text-red-400 text-sm mt-1">{emailError}</p>
               )}
             </div>
 
-            {!resetMode && (
+        {!resetMode && (
               <div className="relative mb-4">
-                <input
+          <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="w-full p-3 rounded-lg bg-blue-800/50 border border-blue-400/20 text-white placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                 />
@@ -360,9 +383,9 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            )}
+        )}
 
-            {!resetMode && (
+        {!resetMode && (
               <div className="text-right mb-6">
                 <button
                   onClick={() => setResetMode(true)}
@@ -374,8 +397,8 @@ export default function LoginPage() {
             )}
 
             <Button
-              onClick={resetMode ? handlePasswordReset : handleLogin}
-              disabled={loading}
+          onClick={resetMode ? handlePasswordReset : handleLogin}
+          disabled={loading}
               className={`w-full py-6 rounded-lg text-lg font-semibold ${
                 loading ? 'bg-blue-600/50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
               }`}
@@ -392,18 +415,18 @@ export default function LoginPage() {
               )}
             </Button>
 
-            {!resetMode && (
-              <>
+        {!resetMode && (
+          <>
                 <div className="flex items-center my-6">
                   <hr className="flex-grow border-blue-400/20" />
                   <span className="mx-4 text-blue-300/50">or</span>
                   <hr className="flex-grow border-blue-400/20" />
-                </div>
+            </div>
 
                 <div className="space-y-3">
                   <Button
-                    onClick={signInWithGoogle}
-                    disabled={loading}
+              onClick={signInWithGoogle}
+              disabled={loading}
                     className="w-full py-6 rounded-lg text-lg font-semibold bg-white text-blue-900 hover:bg-blue-50"
                   >
                     <Image
@@ -413,7 +436,7 @@ export default function LoginPage() {
                       height={20}
                       className="mr-2"
                     />
-                    Sign in with Google
+              Sign in with Google
                   </Button>
 
                   <Button
@@ -428,11 +451,11 @@ export default function LoginPage() {
                       height={20}
                       className="mr-2"
                     />
-                    Sign in with Facebook
+              Sign in with Facebook
                   </Button>
                 </div>
-              </>
-            )}
+          </>
+        )}
 
             {!resetMode && (
               <p className="text-center mt-6 text-blue-300/70">
@@ -443,18 +466,18 @@ export default function LoginPage() {
               </p>
             )}
 
-            {resetMode && (
+        {resetMode && (
               <p className="text-center mt-6 text-blue-300/70">
                 <button
-                  onClick={() => setResetMode(false)}
+            onClick={() => setResetMode(false)}
                   className="text-blue-300 hover:text-blue-200 underline"
-                >
+          >
                   Back to login
                 </button>
-              </p>
-            )}
-          </div>
-        </motion.div>
+          </p>
+        )}
+      </div>
+    </motion.div>
       </div>
     </div>
   );

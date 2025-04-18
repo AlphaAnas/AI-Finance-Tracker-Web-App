@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { LampContainer } from '@/components/ui/lamp';
 import Link from 'next/link';
 import { UserData } from '../api/profile/userDataService';
+import axios from 'axios';
 
 const fadeIn = (direction = "up", delay = 0) => {
   return {
@@ -215,22 +216,11 @@ export default function Signup() {
       setEmailValidation(prev => ({ ...prev, checking: true }));
       
       try {
-        const response = await fetch('/api/validate-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        setEmailValidation({ ...data, checking: false });
+        const response = await axios.post('/api/validate-email', { email });
+        setEmailValidation({ ...response.data, checking: false });
       } catch (error) {
         console.error('Email validation error:', error);
+        // Fall back to basic validation
         const basicRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const isValid = basicRegex.test(email);
         
@@ -242,6 +232,7 @@ export default function Signup() {
       }
     };
 
+    // Debounce email validation to avoid excessive API calls
     const timeoutId = setTimeout(validateEmail, 800);
     return () => clearTimeout(timeoutId);
   }, [email]);
