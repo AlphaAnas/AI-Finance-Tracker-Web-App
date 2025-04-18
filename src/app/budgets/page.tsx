@@ -18,14 +18,12 @@ import {
   ShoppingCart,
   Trash2,
   TrendingDown,
-  TrendingUp,
   Wallet,
 } from "lucide-react"
 import { collection, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore"
 
 // Import UI components directly from the components directory
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -33,14 +31,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Define types
 interface User {
@@ -58,6 +53,8 @@ interface Budget {
   trend?: string
   icon?: React.ReactNode
   color?: string
+  bgColor?: string
+  iconColor?: string
 }
 
 // Map categories to icons and colors
@@ -70,13 +67,13 @@ const categoryIcons: Record<string, React.ReactNode> = {
   default: <ShoppingCart className="h-5 w-5" />,
 }
 
-const categoryColors: Record<string, string> = {
-  Groceries: "bg-emerald-500",
-  Rent: "bg-violet-500",
-  Transport: "bg-amber-500",
-  Entertainment: "bg-blue-500",
+const categoryColors: Record<string, { bg: string; color: string; icon: string }> = {
+  Groceries: { bg: "bg-emerald-500", color: "bg-emerald-100", icon: "text-emerald-600" },
+  Rent: { bg: "bg-violet-500", color: "bg-violet-100", icon: "text-violet-600" },
+  Transport: { bg: "bg-amber-500", color: "bg-amber-100", icon: "text-amber-600" },
+  Entertainment: { bg: "bg-blue-500", color: "bg-blue-100", icon: "text-blue-600" },
   // Default color for any other category
-  default: "bg-gray-500",
+  default: { bg: "bg-gray-500", color: "bg-gray-100", icon: "text-gray-600" },
 }
 
 export default function BudgetsPage() {
@@ -153,6 +150,7 @@ export default function BudgetsPage() {
     const processed = budgets.map((budget) => {
       const category = budget.category || "default"
       const left = budget.allocated - budget.spent
+      const colors = categoryColors[category] || categoryColors.default
 
       // Determine trend (this would ideally be calculated from historical data)
       let trend = "stable"
@@ -166,7 +164,9 @@ export default function BudgetsPage() {
         ...budget,
         left,
         icon: categoryIcons[category] || categoryIcons.default,
-        color: categoryColors[category] || categoryColors.default,
+        color: colors.bg,
+        bgColor: colors.color,
+        iconColor: colors.icon,
         transactions: budget.transactions || Math.floor(Math.random() * 10) + 1, // Placeholder
         trend,
       }
@@ -266,34 +266,35 @@ export default function BudgetsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4 md:p-6 flex justify-center items-center h-[80vh]">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-white p-6 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#6366F1]"></div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-4 md:p-6">
-        <div className="bg-red-50 p-5 rounded-lg text-red-500 flex items-center justify-center">
-          <p>{error}</p>
+      <div className="min-h-screen bg-white p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-red-50 p-5 rounded-lg text-red-500 flex items-center justify-center">
+            <p>{error}</p>
+          </div>
         </div>
       </div>
     )
   }
 
+  const currentMonth = new Date().toLocaleString("default", { month: "long" })
+  const currentYear = new Date().getFullYear()
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-[2rem] font-bold text-[#6366F1] mb-1">
-              Budget Tracker
-            </h1>
-            <p className="text-gray-500">
-              Manage and track your spending across categories
-            </p>
+            <h1 className="text-[2rem] font-bold text-[#6366F1] mb-1">Budget Tracker</h1>
+            <p className="text-gray-500">Manage and track your spending across categories</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -301,24 +302,33 @@ export default function BudgetsPage() {
               <DropdownMenuTrigger asChild>
                 <Button className="bg-[#6366F1] text-white hover:bg-[#5558E8] rounded-lg px-4 py-2 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Monthly
+                  {selectedPeriod === "monthly" ? "Monthly" : selectedPeriod === "weekly" ? "Weekly" : "Yearly"}
                   <ChevronDown className="h-4 w-4 opacity-70" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-white rounded-lg shadow-lg border border-gray-100">
-                <DropdownMenuItem className="text-gray-900 font-medium hover:bg-gray-50">
+                <DropdownMenuItem
+                  className="text-gray-900 font-medium hover:bg-gray-50"
+                  onClick={() => setSelectedPeriod("weekly")}
+                >
                   Weekly
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-900 font-medium hover:bg-gray-50">
+                <DropdownMenuItem
+                  className="text-gray-900 font-medium hover:bg-gray-50"
+                  onClick={() => setSelectedPeriod("monthly")}
+                >
                   Monthly
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-900 font-medium hover:bg-gray-50">
+                <DropdownMenuItem
+                  className="text-gray-900 font-medium hover:bg-gray-50"
+                  onClick={() => setSelectedPeriod("yearly")}
+                >
                   Yearly
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button 
+            <Button
               onClick={() => setIsAddBudgetOpen(true)}
               className="bg-[#6366F1] text-white hover:bg-[#5558E8] rounded-lg px-4 py-2 flex items-center gap-2"
             >
@@ -331,9 +341,11 @@ export default function BudgetsPage() {
         {/* Budget Summary Section */}
         <div className="mb-8">
           <h2 className="text-[#1F2937] text-xl font-bold mb-2">Budget Summary</h2>
-          <p className="text-gray-500 mb-4">Your monthly budget overview for April 2025</p>
-          
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <p className="text-gray-500 mb-4">
+            Your {selectedPeriod} budget overview for {currentMonth} {currentYear}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-blue-600">
@@ -341,9 +353,9 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Total Budget</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">$2,150</p>
+              <p className="text-2xl font-bold text-gray-900">${totalAllocated.toLocaleString()}</p>
             </div>
-            
+
             <div className="bg-purple-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-purple-600">
@@ -351,9 +363,9 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Total Spent</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">$1,850</p>
+              <p className="text-2xl font-bold text-gray-900">${totalSpent.toLocaleString()}</p>
             </div>
-            
+
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-green-600">
@@ -361,171 +373,95 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Remaining</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">$300</p>
+              <p className="text-2xl font-bold text-gray-900">${totalRemaining.toLocaleString()}</p>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Overall Progress</span>
-              <span className="text-gray-900">86% spent</span>
+              <span className="text-gray-900">{percentSpent}% spent</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#6366F1]"
-                style={{ width: '86%' }}
-              ></div>
+              <div className="h-full bg-[#6366F1]" style={{ width: `${percentSpent}%` }}></div>
             </div>
             <div className="flex justify-between text-xs text-gray-500">
               <span>$0</span>
-              <span>$2,150</span>
+              <span>${totalAllocated.toLocaleString()}</span>
             </div>
           </div>
         </div>
 
         {/* Budget Categories Grid */}
-        <div className="grid grid-cols-4 gap-4">
-          {/* Groceries Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-emerald-100 p-2 rounded-lg">
-                  <ShoppingCart className="h-5 w-5 text-emerald-600" />
-                </div>
-                <h3 className="font-bold text-gray-900">Groceries</h3>
-              </div>
-            </div>
+        {processedBudgets.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {processedBudgets.map((budget) => {
+              const percentage = Math.round((budget.spent / budget.allocated) * 100)
+              return (
+                <div key={budget.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className={`${budget.bgColor} p-2 rounded-lg`}>
+                        <div className={budget.iconColor}>{budget.icon}</div>
+                      </div>
+                      <h3 className="font-bold text-gray-900">{budget.name}</h3>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-gray-400 hover:text-gray-600"
+                      onClick={() => handleDeleteBudget(budget.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold text-gray-900">$350</span>
-                <span className="text-sm text-gray-500">of $500</span>
-              </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-2xl font-bold text-gray-900">${budget.spent.toLocaleString()}</span>
+                      <span className="text-sm text-gray-500">of ${budget.allocated.toLocaleString()}</span>
+                    </div>
 
-              <div className="space-y-2">
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500" style={{ width: '70%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">70% spent</span>
-                  <span className="text-emerald-500 font-medium">$150 left</span>
-                </div>
-              </div>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={`h-full ${budget.color}`} style={{ width: `${percentage}%` }}></div>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">{percentage}% spent</span>
+                        <span className={budget.left > 0 ? "text-emerald-500 font-medium" : "text-red-500 font-medium"}>
+                          {budget.left > 0 ? `$${budget.left.toLocaleString()} left` : "Budget depleted"}
+                        </span>
+                      </div>
+                    </div>
 
-              <p className="text-xs text-gray-500">
-                12 transactions this monthly
-              </p>
+                    <p className="text-xs text-gray-500">
+                      {budget.transactions} transactions this {selectedPeriod}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+              <BarChart3 className="h-12 w-12 mb-2 text-gray-400" />
+              <h3 className="text-lg font-medium mb-1 text-gray-700">No budgets found</h3>
+              <p className="text-sm text-gray-500 mb-4">Create your first budget to start tracking your expenses</p>
+              <Button className="bg-[#6366F1] text-white hover:bg-[#5558E8]" onClick={() => setIsAddBudgetOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Budget
+              </Button>
             </div>
           </div>
-
-          {/* Rent Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-violet-100 p-2 rounded-lg">
-                  <Home className="h-5 w-5 text-violet-600" />
-                </div>
-                <h3 className="font-bold text-gray-900">Rent</h3>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold text-gray-900">$1200</span>
-                <span className="text-sm text-gray-500">of $1200</span>
-              </div>
-
-              <div className="space-y-2">
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-violet-500" style={{ width: '100%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">100% spent</span>
-                  <span className="text-red-500 font-medium">Budget depleted</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                1 transactions this monthly
-              </p>
-            </div>
-          </div>
-
-          {/* Transport Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-amber-100 p-2 rounded-lg">
-                  <CreditCard className="h-5 w-5 text-amber-600" />
-                </div>
-                <h3 className="font-bold text-gray-900">Transport</h3>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold text-gray-900">$180</span>
-                <span className="text-sm text-gray-500">of $250</span>
-              </div>
-
-              <div className="space-y-2">
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500" style={{ width: '72%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">72% spent</span>
-                  <span className="text-emerald-500 font-medium">$70 left</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                8 transactions this monthly
-              </p>
-            </div>
-          </div>
-
-          {/* Entertainment Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-gray-900">Entertainment</h3>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold text-gray-900">$120</span>
-                <span className="text-sm text-gray-500">of $200</span>
-              </div>
-
-              <div className="space-y-2">
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500" style={{ width: '60%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">60% spent</span>
-                  <span className="text-emerald-500 font-medium">$80 left</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                5 transactions this monthly
-              </p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Add Budget Dialog */}
       <Dialog open={isAddBudgetOpen} onOpenChange={setIsAddBudgetOpen}>
         <DialogContent className="bg-white rounded-lg shadow-xl max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">
-              Create new budget
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900">Create new budget</DialogTitle>
             <DialogDescription className="text-gray-500">
               Set up a new budget category to track your spending.
             </DialogDescription>
@@ -564,7 +500,10 @@ export default function BudgetsPage() {
                 Category
               </Label>
               <Select value={newBudgetCategory} onValueChange={setNewBudgetCategory}>
-                <SelectTrigger id="category" className="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent">
+                <SelectTrigger
+                  id="category"
+                  className="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                >
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -582,6 +521,7 @@ export default function BudgetsPage() {
               variant="outline"
               onClick={() => setIsAddBudgetOpen(false)}
               className="border-gray-200 hover:bg-gray-50 text-gray-700"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
