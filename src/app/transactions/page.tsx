@@ -155,6 +155,63 @@ export default function TransactionsPage() {
         : [...prev, id]
     );
   };
+  const saveTransaction = async (transaction: Transaction) => {
+    if (!user) {
+      toast.error('Please log in to save transactions');
+      return;
+    }
+  
+    try {
+      setIsSubmitting(true);
+      console.log('Transaction being saved:', transaction); // Log the transaction data
+  
+      const response = await fetch('/api/save-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, transaction }),
+      });
+  
+      console.log('API Response:', response);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.error || 'Failed to save transaction');
+      }
+  
+      const { id } = await response.json();
+      console.log('Saved transaction ID:', id);
+  
+      toast.success('Transaction added successfully!');
+      setTransactions(prev => [...prev, { ...transaction, id }]);
+    } catch (error) {
+      console.error('Error saving transaction:', error);
+      toast.error('Failed to save transaction');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleManualSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  
+    const formData = new FormData(e.currentTarget);
+    const transaction: Transaction = {
+      id: '', // Will be set by the backend
+      userid: user?.uid || '',
+      account: formData.get('account') as string,
+      date: formData.get('date') as string,
+      status: formData.get('type') as 'incoming' | 'outgoing',
+      amount: parseFloat(formData.get('amount') as string) || 0, // Ensure amount is a valid number
+      category: formData.get('category') as string,
+      description: formData.get('description') as string,
+      vendor: formData.get('vendor') as string,
+    };
+  
+    console.log('Transaction to save:', transaction); // Log the transaction data
+  
+    await saveTransaction(transaction);
+    setIsAddTransactionOpen(false);
+  };
   const exportToCSV = () => {
     if (transactions.length === 0) {
       toast.error("No transactions available to export.");
@@ -283,7 +340,7 @@ export default function TransactionsPage() {
                   <TabsTrigger value="image" className="py-2 px-4 hover:bg-gray-200">Upload Receipt</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual">
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleManualSubmit}>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="amount" className="text-gray-800">Amount</Label>
@@ -351,10 +408,10 @@ export default function TransactionsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="date" className="text-gray-800">Date</Label>
-                      <Input id="date" name="date" type="date" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={extractedData?.InvoiceDate || new Date().toISOString().split('T')[0]} required />
+                      <Input id="date" name="date" type="date" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={new Date().toISOString().split('T')[0]} required />
                     </div>
                     <DialogFooter>
-                      <Button type="submit" onClick={() => setIsAddTransactionOpen(false)} disabled={isSubmitting} className="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">
+                      <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">
                         Add Transaction
                       </Button>
                     </DialogFooter>
@@ -491,7 +548,7 @@ export default function TransactionsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <button className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
+          <button className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300" onClick={exportToCSV}>
             <FaFileExport /> Export
           </button>
         </div>
@@ -499,13 +556,13 @@ export default function TransactionsPage() {
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="relative flex-1">
-            <input type="text" placeholder="Search transactions..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Search transactions..." className="w-full pl-10 pr-4 py-2 border border-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 text-black" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800" />
           </div>
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
               <span className="text-gray-800">Status:</span>
-              <select className="border border-gray-300 rounded-md px-3 py-2" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <select className="border border-gray-800 rounded-md px-3 py-2 text-black" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="all">All</option>
                 <option value="incoming">Incoming</option>
                 <option value="outgoing">Outgoing</option>
