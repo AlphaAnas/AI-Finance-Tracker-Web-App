@@ -81,16 +81,17 @@ export default function TransactionsPage() {
     try {
       setIsLoading(true);
       setError(null);
-
+  
       console.log(`Fetching transactions for user ID: ${userId}`);
       const response = await fetch(`/api/get-transactions?uid=${userId}`);
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-
+  
       const data = await response.json();
+      console.log('Fetched transactions:', data); // Log the fetched data
       setTransactions(data);
     } catch (err) {
       console.error('Error details:', err);
@@ -99,7 +100,6 @@ export default function TransactionsPage() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
