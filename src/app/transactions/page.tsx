@@ -155,7 +155,35 @@ export default function TransactionsPage() {
         : [...prev, id]
     );
   };
-
+  const exportToCSV = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions available to export.");
+      return;
+    }
+  
+    const headers = ["Transaction ID", "Account", "Date", "Status", "Amount", "Category", "Description"];
+    const rows = transactions.map(transaction => [
+      transaction.id,
+      transaction.account,
+      new Date(transaction.date).toLocaleDateString('en-US'),
+      transaction.status,
+      transaction.amount.toFixed(2),
+      transaction.category,
+      transaction.description,
+    ]);
+  
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(value => `"${value}"`).join(","))
+      .join("\n");
+  
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const fileName = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
+  
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+  };
   const toggleSelectAll = () => {
     if (selectedTransactions.length === filteredTransactions.length) {
       setSelectedTransactions([]);
