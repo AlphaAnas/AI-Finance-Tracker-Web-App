@@ -11,6 +11,11 @@ if (!admin.apps.length) {
 
     // Validate required service account properties
     if (!serviceAccount.privateKey || !serviceAccount.clientEmail || !serviceAccount.projectId) {
+      console.error('Missing Firebase service account credentials:', {
+        hasPrivateKey: !!serviceAccount.privateKey,
+        hasClientEmail: !!serviceAccount.clientEmail,
+        hasProjectId: !!serviceAccount.projectId,
+      });
       throw new Error('Missing required Firebase service account credentials');
     }
 
@@ -18,9 +23,11 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccount),
       databaseURL: process.env.FIREBASE_DATABASE_URL
     });
+
+    console.log('Firebase Admin initialized successfully');
   } catch (error) {
     console.error('Firebase admin initialization error:', error);
-    throw error; // Re-throw to prevent silent failures
+    // Don't throw here to allow the app to start, but log the error
   }
 }
 
