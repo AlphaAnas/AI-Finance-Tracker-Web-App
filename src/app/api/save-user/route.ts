@@ -12,6 +12,14 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!db) {
+      console.error('Firestore not initialized');
+      return NextResponse.json(
+        { message: 'Database service unavailable' },
+        { status: 503 }
+      );
+    }
+
     // Save user data to Firestore
     await db.collection('users').doc(userData.uid).set({
       ...userData,
