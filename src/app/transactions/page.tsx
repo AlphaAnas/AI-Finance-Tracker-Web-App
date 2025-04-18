@@ -133,7 +133,8 @@ export default function TransactionsPage() {
           transaction.id.toLowerCase().includes(searchLower) ||
           transaction.account.toLowerCase().includes(searchLower) ||
           transaction.category.toLowerCase().includes(searchLower) ||
-          transaction.description.toLowerCase().includes(searchLower)
+          transaction.description.toLowerCase().includes(searchLower) ||
+          (transaction.vendor && transaction.vendor.toLowerCase().includes(searchLower))
         );
       }
 
@@ -308,6 +309,15 @@ export default function TransactionsPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="vendor" className="text-gray-800 font-medium">Spent On</Label>
+                      <Input 
+                        id="vendor" 
+                        name="vendor" 
+                        className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" 
+                        placeholder="Store/place of purchase"
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="description" className="text-gray-800">Description</Label>
                       <Input id="description" name="description" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" placeholder="Enter transaction description" />
                     </div>
@@ -406,6 +416,15 @@ export default function TransactionsPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
+                            <Label htmlFor="vendor" className="text-gray-800 font-medium">Spent On</Label>
+                            <Input 
+                              id="vendor" 
+                              name="vendor" 
+                              className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" 
+                              placeholder="Store/place of purchase"
+                            />
+                          </div>
+                          <div className="space-y-2">
                             <Label htmlFor="description" className="text-gray-800">Description</Label>
                             <Input id="description" name="description" className="bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={`Receipt from ${extractedData.VendorName || 'Unknown Vendor'}`} placeholder="Enter transaction description" />
                           </div>
@@ -492,6 +511,9 @@ export default function TransactionsPage() {
                 <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-8 py-4 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
+                  Vendor
+                </th>
                 <th className="px-8 py-4 text-right text-xs font-medium text-gray-800 uppercase tracking-wider">
                   Amount
                 </th>
@@ -500,19 +522,19 @@ export default function TransactionsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-700">
                     Loading transactions...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-red-600">
+                  <td colSpan={6} className="px-6 py-8 text-center text-red-600">
                     {error}
                   </td>
                 </tr>
               ) : currentTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-700">
                     No transactions found
                   </td>
                 </tr>
@@ -544,6 +566,9 @@ export default function TransactionsPage() {
                           <><FaArrowUp className="mr-1" /> Outgoing</>
                         )}
                       </span>
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
+                      {transaction.vendor || '-'}
                     </td>
                     <td className={`px-8 py-5 whitespace-nowrap text-sm font-medium text-right ${
                       transaction.status === 'incoming' ? 'text-green-600' : 'text-red-600'
