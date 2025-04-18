@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { auth } from '@/app/firebase'; // adjust path if needed
-
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 
 // THIS API ROUTE IS FOR PARSING INVOICES USING GOOGLE GEMINI API AND SAVING THE DATA TO FIRESTORE
@@ -38,10 +38,14 @@ Task: From the invoice image provided, extract the key fields:
 - Total Amount: Decimal (Output field: TotalAmount) 
 - Vendor Name: String (Output field: VendorName)
 - Payment Method: String (Output field: PaymentMethod)
-- Invoice Type: String (Output field: InvoiceType)
+- Invoice Type: incoming | outgoing (string) (Output field: InvoiceType)
 - Withholding Tax Amount: Decimal ((Output field: WitholdingTaxAmount))
 - GST Amount: Decimal (Output field: GSTAmount)
 - Tax Invoice Number (Output field: TaxInvoiceNumber)
+- Category: One of [Groceries, Utilities, Medical, Entertainment, Dining/Restaurants, Transportation, Clothing, Education, Technology, Miscellaneous] (Output field: Category)
+
+The Category should be inferred based on VendorName and ItemName(s).
+
 
 Provide the output as a JSON object with the exact field names specified above. If a field is missing, ignore it and do not fill it in or make assumptions.
 
@@ -103,11 +107,37 @@ export async function POST(request: Request) {
 
 
 
-    // 🔥 Store the parsed data in Firestore
-    await addDoc(collection(db, 'transactions'), {
+    // // 🔥 Store the parsed data in Firestore
+    // await addDoc(collection(db, 'transactions'), {
+    //   ...extractedData,
+    //   createdAt: new Date().toISOString(),
+    // });
+
+
+    const transactionData = {
       ...extractedData,
       createdAt: new Date().toISOString(),
-    });
+    };
+    
+    // 1. Add transaction
+    await addDoc(collection(db, 'transactions'), transactionData);
+    
+    // 2. Update currentBalance if transaction is incoming
+    if (extractedData?.InvoiceType?.toLowerCase() === "incoming" || extractedData?.status === "incoming") {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+    
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const currentBalance = userData.currentBalance || 0;
+        const updatedBalance = currentBalance + (extractedData.TotalAmount || 0);
+    
+        await updateDoc(userRef, {
+          currentBalance: updatedBalance,
+        });
+      }
+    }
+    
 
     return NextResponse.json({
       success: true,

@@ -50,12 +50,13 @@ export async function GET(request: Request) {
           id: `TRX-${data.InvoiceNumber || Math.floor(Math.random() * 10000)}`,
           account: "Main Checking",
           date: data.InvoiceDate || 'No Invoice Date Found!',
-          status: "outgoing",
+          InvoiceType: data.InvoiceType || 'outgoing',
           amount: data.TotalAmount || 0,
-          category: data.VendorName || "Uncategorized",
+          vendorName: data.VendorName || "Uncategorized",
+          category: data.Category || "Uncategorized",
           description: data.Items?.map((item: any) => item.ItemName).join(', ') || "No items",
           vendor: data.VendorName,
-          invoiceType: data.InvoiceType,
+          invoiceType: data.InvoiceType, // this is the type of invoice (incoming or outgoing)
           gstAmount: data.GSTAmount,
           items: data.Items || [],
         };

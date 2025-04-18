@@ -20,7 +20,8 @@ interface Transaction {
   userid: string;
   account: string;
   date: string;
-  status: "incoming" | "outgoing";
+  
+  InvoiceType: "incoming" | "outgoing";
   amount: number;
   category: string;
   description: string;
@@ -55,11 +56,11 @@ export default function DashboardPage() {
 
   function updateDashboard(transactions: Transaction[]) {
     const income = transactions
-      .filter((tx) => tx.status === "incoming")
+      .filter((tx) => tx.InvoiceType === "incoming")
       .reduce((sum, tx) => sum + tx.amount, 0);
 
     const expenses = transactions
-      .filter((tx) => tx.status === "outgoing")
+      .filter((tx) => tx.InvoiceType === "outgoing")
       .reduce((sum, tx) => sum + tx.amount, 0);
 
     const balance = income - expenses;
