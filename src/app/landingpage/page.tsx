@@ -399,80 +399,74 @@ export default function Home() {
         {/* Features Section - Improved Layout */}
         <motion.section
           id="features"
-          className="py-20 md:py-32"
+          className="py-8 md:py-12"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
           variants={fadeIn("up", 0.4)}
         >
           <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
+            <div className="text-center mb-8">
               <div className="inline-block rounded-lg bg-blue-500/20 px-4 py-2 text-sm text-blue-300">Features</div>
-              <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl mt-4">
+              <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl mt-2">
                 Everything You Need to Manage Expenses
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              <motion.div
-                className="bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl"
-                whileHover={{ y: -10 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="relative mb-6 h-48 overflow-hidden rounded-xl">
+            <div className="max-w-[95rem] mx-auto bg-blue-900/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-400/20 shadow-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
+                <div className="bg-blue-800/50 rounded-lg p-3">
+                  <h3 className="text-xl font-bold mb-1">Expense Tracking</h3>
+                  <p className="text-blue-200">
+                    Automatically categorize and track all your expenses in real-time with AI-powered insights.
+                  </p>
+                </div>
+                <div className="bg-blue-800/50 rounded-lg p-3">
+                  <h3 className="text-xl font-bold mb-1">Budget Planning</h3>
+                  <p className="text-blue-200">
+                    Create custom budgets and get smart alerts when you're approaching your limits.
+                  </p>
+                </div>
+                <div className="bg-blue-800/50 rounded-lg p-3">
+                  <h3 className="text-xl font-bold mb-1">Financial Reports</h3>
+                  <p className="text-blue-200">
+                    Generate detailed reports and visualizations to understand your spending patterns.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="relative h-[400px] lg:h-[600px] w-full max-w-[600px] mx-auto transition-transform hover:scale-130 duration-300">
                   <Image
-                    src="/feature-expense-tracking.png"
+                    src="/expense.png"
                     fill
-                    style={{ objectFit: "cover" }}
+                    style={{ objectFit: "contain" }}
                     alt="Expense Tracking"
-                    className="rounded-xl border border-blue-400/20"
+                    className="rounded-lg !w-full"
+                    priority
                   />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Expense Tracking</h3>
-                <p className="text-blue-200">
-                  Automatically categorize and track all your expenses in real-time with AI-powered insights.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl"
-                whileHover={{ y: -10 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="relative mb-6 h-48 overflow-hidden rounded-xl">
+                <div className="relative h-[400px] lg:h-[600px] w-full max-w-[600px] mx-auto transition-transform hover:scale-130 duration-300">
                   <Image
-                    src="/budgets.png"
+                    src="/budgets2.png"
                     fill
-                    style={{ objectFit: "cover" }}
+                    style={{ objectFit: "contain" }}
                     alt="Budget Planning"
-                    className="rounded-xl border border-blue-400/20"
+                    className="rounded-lg !w-full"
+                    priority
                   />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Budget Planning</h3>
-                <p className="text-blue-200">
-                  Create custom budgets and get smart alerts when you're approaching your limits.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="bg-blue-900/80 backdrop-blur-sm rounded-2xl p-8 border border-blue-400/20 shadow-2xl"
-                whileHover={{ y: -10 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="relative mb-6 h-48 overflow-hidden rounded-xl">
+                <div className="relative h-[400px] lg:h-[600px] w-full max-w-[600px] mx-auto transition-transform hover:scale-130 duration-300">
                   <Image
-                    src="/feature-financial-reports.png"
+                    src="/reports.png"
                     fill
-                    style={{ objectFit: "cover" }}
+                    style={{ objectFit: "contain" }}
                     alt="Financial Reports"
-                    className="rounded-xl border border-blue-400/20"
+                    className="rounded-lg !w-full"
+                    priority
                   />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Financial Reports</h3>
-                <p className="text-blue-200">
-                  Generate detailed reports and visualizations to understand your spending patterns.
-                </p>
-              </motion.div>
+              </div>
             </div>
           </div>
         </motion.section>
@@ -590,23 +584,14 @@ export default function Home() {
                 Sign up today and let AI simplify your budget management. Start your 14-day free trial with no credit
                 card required.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-full text-lg shadow-lg transition-all duration-300"
-                  onClick={() => (window.location.href = "/signup")}
-                >
-                  Sign Up Now
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-blue-400 text-blue-100 hover:bg-blue-800/50 px-8 py-6 rounded-full text-lg transition-all duration-300"
-                >
-                  Learn More
-                </Button>
-              </div>
+              <Button
+                size="lg"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-full text-lg shadow-lg transition-all duration-300"
+                onClick={() => (window.location.href = "/signup")}
+              >
+                Sign Up Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </div>
           </div>
         </motion.section>
