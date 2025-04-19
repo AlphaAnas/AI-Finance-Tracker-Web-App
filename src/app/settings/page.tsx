@@ -294,10 +294,6 @@ const ProfilePage = () => {
                     <p className="text-sm text-gray-500">Account Status</p>
                     <p className="text-lg font-medium text-green-600">Active</p>
                   </div>
-                  <div className="bg-white/80 p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                    <p className="text-sm text-gray-500">User ID</p>
-                    <p className="text-lg font-medium text-gray-800">{user?.uid.substring(0, 8)}...</p>
-                  </div>
                 </div>
               </div>
 
