@@ -465,9 +465,9 @@ export default function BudgetsPage() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-gray-500">
+                    {/* <p className="text-xs text-gray-500">
                       {budget.transactions} transactions this {selectedPeriod}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               )
