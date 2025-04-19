@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (!basicRegex.test(email)) {
       return NextResponse.json({
         isValid: false,
-        message: "Please enter a valid email."
+        message: "Please enter a valid email"
       });
     }
 
@@ -27,27 +27,27 @@ export async function POST(request: Request) {
       const response = await axios.get(`https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.ABSTRACT_API_KEY}&email=${email}`);
       const data = response.data;
 
-      // Check for non-existent or invalid domain first
-      if (!data.is_mx_found?.value || data.is_smtp_valid?.value === false) {
-        return NextResponse.json({
-          isValid: false,
-          message: "Please use a valid domain name"
-        });
-      }
-
-      // Check for undeliverable email
+      // Check for specific validation failures
       if (!data.deliverability || data.deliverability === "UNDELIVERABLE") {
         return NextResponse.json({
           isValid: false,
-          message: "Please enter a valid email."
+          message: "Please enter a valid email"
         });
       }
 
-      // Check for disposable email services
       if (data.is_disposable_email?.value === true) {
         return NextResponse.json({
           isValid: false,
-          message: "Please use a permanent email address."
+          message: "Please use a permanent email address"
+        });
+      }
+
+      // If the domain appears inactive or invalid
+      if (data.is_valid_format?.value === true && 
+          (!data.is_mx_found?.value || data.is_smtp_valid?.value === false)) {
+        return NextResponse.json({
+          isValid: false,
+          message: "Please enter a valid email"
         });
       }
 
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({
       isValid: false,
-      message: "Please enter a valid email."
+      message: "Please enter a valid email"
     });
   }
 }
