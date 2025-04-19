@@ -124,7 +124,7 @@ export default function ReportsPage() {
               <div className="mb-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-700">Total Expenses</span>
-                  <span className="font-medium">$3,260.00</span>
+                  <span className="font-medium">Rs.3,260.00</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-700">Highest Category</span>
@@ -143,7 +143,7 @@ export default function ReportsPage() {
               <div className="mb-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-700">Net Cash Flow</span>
-                  <span className="font-medium">$5,190.00</span>
+                  <span className="font-medium">Rs.5,190.00</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-700">Savings Rate</span>
