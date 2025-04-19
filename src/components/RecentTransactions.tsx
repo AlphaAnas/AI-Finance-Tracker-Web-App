@@ -138,11 +138,11 @@ currentTransactions.map((tx, index) => {
   return (
     <div className="bg-white p-5 rounded-lg shadow-md">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold  text-black">Recent Transactions</h2>
+        <h2 className="text-lg font-semibold text-black">Recent Transactions</h2>
         <Link href="/transactions" className="text-blue-600 hover:underline">View all →</Link>
       </div>
       <div className="mt-4">
-        {currentTransactions.map((tx, index) => (
+        {transactions.slice(0, 4).map((tx, index) => (
           <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-3">
             <div>
               <h3 className="text-md font-medium text-gray-800">
@@ -157,17 +157,21 @@ currentTransactions.map((tx, index) => {
                 {tx.InvoiceType === "incoming" ? "+" : "-"}Rs.{tx.amount.toFixed(2)}
               </p>
               <span className="text-gray-500 text-xs bg-gray-200 px-2 py-1 rounded">
-              {tx.description ? 
+                {tx.description ? 
                   (tx.description.length > 20 ? 
                     `${tx.description.substring(0, 20)}...` : 
                     tx.description) : 
                   'No description'
-                  }
-
+                }
               </span>
             </div>
           </div>
         ))}
+        {transactions.length > 4 && (
+          <div className="text-center p-3 text-gray-500 italic border-t border-gray-100">
+            {transactions.length - 4} more transactions...
+          </div>
+        )}
       </div>
     </div>
   );
