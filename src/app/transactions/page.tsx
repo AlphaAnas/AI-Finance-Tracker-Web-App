@@ -37,7 +37,7 @@ interface Transaction {
   userid: string;
   account: string;
   date: string;
-  status: "incoming" | "outgoing";
+  InvoiceType: "incoming" | "outgoing";
   amount: number;
   category: string;
   description: string;
@@ -123,7 +123,7 @@ export default function TransactionsPage() {
 
   const filteredTransactions = transactions
     .filter(transaction => {
-      if (statusFilter !== "all" && transaction.status !== statusFilter) {
+      if (statusFilter !== "all" && transaction.InvoiceType !== statusFilter) {
         return false;
       }
 
@@ -215,7 +215,7 @@ export default function TransactionsPage() {
       userid: user?.uid || '',
       account: formData.get('account') as string,
       date: formData.get('date') as string,  // Changed from 'InvoiceDate' to 'date'
-      status: formData.get('type') as 'incoming' | 'outgoing',  // Changed from 'InvoiceType' to 'type'
+      InvoiceType: formData.get('type') as 'incoming' | 'outgoing',  // Changed from 'InvoiceType' to 'type'
       amount: parseFloat(formData.get('amount') as string) || 0,  // Changed from 'TotalAmount' to 'amount'
       category: formData.get('category') as string,
       description: formData.get('description') as string,  // Changed from 'Items' to 'description'
@@ -238,7 +238,7 @@ export default function TransactionsPage() {
       transaction.id,
       transaction.account,
       new Date(transaction.date).toLocaleDateString('en-US'),
-      transaction.status,
+      transaction.InvoiceType,
       transaction.amount.toFixed(2),
       transaction.category,
       transaction.description,
@@ -644,10 +644,8 @@ export default function TransactionsPage() {
                   <tr key={transaction.id} className="hover:bg-[oklch(0.961_0.01_0)]">
                     <td className="px-6 py-5 whitespace-nowrap">
                       <span className="font-medium text-gray-900">
-                        {/* {transaction.id} */}
-                        {`TRX-${index + 1}`}
-                        
-                        </span>
+                        {`TRX-${(currentPage - 1) * TRANSACTIONS_PER_PAGE + index + 1}`}
+                      </span>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
                       {transaction.account}
@@ -661,11 +659,11 @@ export default function TransactionsPage() {
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        transaction.status === 'incoming'
+                        transaction.InvoiceType === 'incoming'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {transaction.status === 'incoming' ? (
+                        {transaction.InvoiceType === 'incoming' ? (
                           <><FaArrowDown className="mr-1" /> Incoming</>
                         ) : (
                           <><FaArrowUp className="mr-1" /> Outgoing</>
@@ -676,9 +674,9 @@ export default function TransactionsPage() {
                       {transaction.vendor || '-'}
                     </td>
                     <td className={`px-8 py-5 whitespace-nowrap text-sm font-medium text-right ${
-                      transaction.status === 'incoming' ? 'text-green-600' : 'text-red-600'
+                      transaction.InvoiceType === 'incoming' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.status === 'incoming' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                      {transaction.InvoiceType === 'incoming' ? '+' : '-'}${transaction.amount.toFixed(2)}
                     </td>
                   </tr>
                 ))

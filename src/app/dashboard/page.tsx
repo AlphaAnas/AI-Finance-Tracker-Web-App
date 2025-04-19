@@ -55,16 +55,21 @@ export default function DashboardPage() {
   });
 
   function updateDashboard(transactions: Transaction[]) {
+    // Calculate total income from incoming transactions
     const income = transactions
       .filter((tx) => tx.InvoiceType === "incoming")
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
+    // Calculate total expenses from outgoing transactions
     const expenses = transactions
       .filter((tx) => tx.InvoiceType === "outgoing")
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
+    // Calculate current balance
     const balance = income - expenses;
-    const savingsRate = income ? parseFloat(((balance / income) * 100).toFixed(0)) : 0;
+    
+    // Calculate savings rate (as a percentage of income)
+    const savingsRate = income > 0 ? Math.round((balance / income) * 100) : 0;
 
     setDashboardStats({
       income,
@@ -145,16 +150,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card
           title="Current Balance"
-          amount={`Rs. ${userProfile?.currentBalance?.toFixed(2) || '0.00'}`}
+          amount={`Rs. ${dashboardStats.balance.toFixed(2)}`}
           percentage={`${dashboardStats.savingsRate}%`}
-          isIncrease={userProfile?.currentBalance ? (userProfile.currentBalance >= 0) : true}
+          isIncrease={dashboardStats.balance >= 0}
           icon={<FaWallet />}
           borderColor="border-blue-500"
         />
         <Card
           title="Total Income"
           amount={`Rs. ${dashboardStats.income.toFixed(2)}`}
-          percentage="8%"
+          percentage={dashboardStats.income > 0 ? "+100%" : "0%"}
           isIncrease={true}
           icon={<FaChartLine />}
           borderColor="border-green-500"
@@ -162,7 +167,7 @@ export default function DashboardPage() {
         <Card
           title="Total Expenses"
           amount={`Rs. ${dashboardStats.expenses.toFixed(2)}`}
-          percentage="3%"
+          percentage={dashboardStats.expenses > 0 ? "+100%" : "0%"}
           isIncrease={false}
           icon={<FaDollarSign />}
           borderColor="border-red-500"
@@ -170,8 +175,8 @@ export default function DashboardPage() {
         <Card
           title="Savings Rate"
           amount={`${dashboardStats.savingsRate}%`}
-          percentage="5%"
-          isIncrease={true}
+          percentage={dashboardStats.savingsRate > 0 ? `+${dashboardStats.savingsRate}%` : "0%"}
+          isIncrease={dashboardStats.savingsRate > 0}
           icon={<FaPiggyBank />}
           borderColor="border-purple-500"
         />

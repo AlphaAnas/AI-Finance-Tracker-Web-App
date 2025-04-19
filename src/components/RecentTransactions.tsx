@@ -89,6 +89,7 @@ export default function RecentTransactions()
   
         const data = await response.json();
         setTransactions(data);
+
       } catch (err) {
         console.error('Error details:', err);
         setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -127,6 +128,12 @@ const indexOfLastTransaction = indexOfFirstTransaction + TRANSACTIONS_PER_PAGE;
 const currentTransactions = transactions && transactions.length > 0 
   ? transactions.slice(indexOfFirstTransaction, indexOfLastTransaction) 
   : [];
+
+currentTransactions.map((tx, index) => {
+  console.log(`Transaction ${index + 1}:`, tx);
+  // return tx;
+}
+);
 
   return (
     <div className="bg-white p-5 rounded-lg shadow-md">
