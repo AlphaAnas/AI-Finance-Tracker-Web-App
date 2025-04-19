@@ -91,7 +91,6 @@ export default function BudgetsPage() {
   const [processedBudgets, setProcessedBudgets] = useState<any[]>([])
 
   const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false)
-  const [selectedPeriod, setSelectedPeriod] = useState("monthly")
 
   // Form state for new budget
   const [newBudgetName, setNewBudgetName] = useState("")
@@ -315,9 +314,6 @@ export default function BudgetsPage() {
     )
   }
 
-  const currentMonth = new Date().toLocaleString("default", { month: "long" })
-  const currentYear = new Date().getFullYear()
-
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto">
@@ -329,36 +325,6 @@ export default function BudgetsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="bg-[#6366F1] text-white hover:bg-[#5558E8] rounded-lg px-4 py-2 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {selectedPeriod === "monthly" ? "Monthly" : selectedPeriod === "weekly" ? "Weekly" : "Yearly"}
-                  <ChevronDown className="h-4 w-4 opacity-70" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white rounded-lg shadow-lg border border-gray-100">
-                <DropdownMenuItem
-                  className="text-gray-900 font-medium hover:bg-gray-50"
-                  onClick={() => setSelectedPeriod("weekly")}
-                >
-                  Weekly
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-gray-900 font-medium hover:bg-gray-50"
-                  onClick={() => setSelectedPeriod("monthly")}
-                >
-                  Monthly
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-gray-900 font-medium hover:bg-gray-50"
-                  onClick={() => setSelectedPeriod("yearly")}
-                >
-                  Yearly
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <Button
               onClick={() => setIsAddBudgetOpen(true)}
               className="bg-[#6366F1] text-white hover:bg-[#5558E8] rounded-lg px-4 py-2 flex items-center gap-2"
@@ -373,7 +339,7 @@ export default function BudgetsPage() {
         <div className="mb-8">
           <h2 className="text-[#1F2937] text-xl font-bold mb-2">Budget Summary</h2>
           <p className="text-gray-500 mb-4">
-            Your {selectedPeriod} budget overview for {currentMonth} {currentYear}
+            Your budget overview for {new Date().toLocaleString('default', { month: 'long' })} {new Date().getFullYear()}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
