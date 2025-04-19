@@ -4,75 +4,70 @@ import axios from 'axios';
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-    
-    if (!email) {
-      return NextResponse.json({ 
-        isValid: false, 
-        message: 'Email is required' 
-      }, { status: 400 });
-    }
 
-    // Basic email format validation using regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Basic email format validation
+    const basicRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicRegex.test(email)) {
       return NextResponse.json({
         isValid: false,
-        message: 'Please enter a valid email'
+        message: "Please enter a valid email."
       });
     }
 
-    try {
-      const abstractApiKey = process.env.ABSTRACT_API_KEY;
-      
-      // Check if API key exists and is valid (not truncated)
-      if (!abstractApiKey || abstractApiKey.length < 32) {
-        console.error('Abstract API key is missing or appears incomplete');
-        // Fall back to basic validation if API key is missing or incomplete
-        return NextResponse.json({
-          isValid: true,
-          message: 'Valid Email'
-        });
-      }
+    // If ABSTRACT_API_KEY is not set, fall back to basic validation
+    if (!process.env.ABSTRACT_API_KEY) {
+      return NextResponse.json({
+        isValid: true,
+        message: "Valid Email"
+      });
+    }
 
-      // Make request to Abstract API
-      const response = await axios.get(
-        `https://emailvalidation.abstractapi.com/v1/?api_key=${abstractApiKey}&email=${encodeURIComponent(email)}`
-      );
+    // Extended validation using Abstract API
+    try {
+      const response = await axios.get(`https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.ABSTRACT_API_KEY}&email=${email}`);
       const data = response.data;
 
-      // Check the quality score and is_valid flag from Abstract API
-      if (data.is_valid_format && data.deliverability === "DELIVERABLE") {
-        return NextResponse.json({
-          isValid: true,
-          message: 'Valid Email'
-        });
-      } else if (data.is_valid_format && data.deliverability === "UNDELIVERABLE") {
+      // Check for non-existent or invalid domain first
+      if (!data.is_mx_found?.value || data.is_smtp_valid?.value === false) {
         return NextResponse.json({
           isValid: false,
-          message: 'Please enter a valid email'
-        });
-      } else {
-        return NextResponse.json({
-          isValid: false,
-          message: 'Please enter a valid email'
+          message: "Please use a valid domain name"
         });
       }
-    } catch (error) {
-      console.error('Email validation error:', error);
-      
-      // If API call fails, fall back to basic validation
+
+      // Check for undeliverable email
+      if (!data.deliverability || data.deliverability === "UNDELIVERABLE") {
+        return NextResponse.json({
+          isValid: false,
+          message: "Please enter a valid email."
+        });
+      }
+
+      // Check for disposable email services
+      if (data.is_disposable_email?.value === true) {
+        return NextResponse.json({
+          isValid: false,
+          message: "Please use a permanent email address."
+        });
+      }
+
+      // If everything passes
       return NextResponse.json({
-        isValid: emailRegex.test(email),
-        message: emailRegex.test(email) 
-          ? 'Valid Email' 
-          : 'Please enter a valid email'
+        isValid: true,
+        message: "Valid Email"
+      });
+
+    } catch (error) {
+      // Fallback to basic validation if API call fails
+      return NextResponse.json({
+        isValid: true,
+        message: "Valid Email"
       });
     }
   } catch (error) {
-    console.error('Request parsing error:', error);
-    return NextResponse.json({ 
-      isValid: false, 
-      message: 'Please enter a valid email' 
-    }, { status: 400 });
+    return NextResponse.json({
+      isValid: false,
+      message: "Please enter a valid email."
+    });
   }
 }
