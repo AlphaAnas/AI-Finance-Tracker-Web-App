@@ -57,6 +57,13 @@ interface Budget {
   iconColor?: string
 }
 
+interface Transaction {
+  id: string;
+  category: string;
+  amount: number;
+  InvoiceType: "incoming" | "outgoing";
+}
+
 // Map categories to icons and colors
 const categoryIcons: Record<string, React.ReactNode> = {
   Groceries: <ShoppingCart className="h-5 w-5" />,
@@ -104,18 +111,42 @@ export default function BudgetsPage() {
       setError(null)
 
       console.log(`Fetching budgets for user ID: ${userId}`)
-      const response = await fetch(`/api/get-budgets?uid=${userId}`)
+      
+      // Fetch both budgets and transactions
+      const [budgetsResponse, transactionsResponse] = await Promise.all([
+        fetch(`/api/get-budgets?uid=${userId}`),
+        fetch(`/api/get-transactions?uid=${userId}`)
+      ])
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      if (!budgetsResponse.ok || !transactionsResponse.ok) {
+        throw new Error('Failed to fetch data')
       }
 
-      const data = await response.json()
-      setBudgets(data)
+      const budgetsData = await budgetsResponse.json()
+      const transactionsData = await transactionsResponse.json()
 
-      // Process budget data
-      processBudgetData(data)
+      // Calculate spent amounts for each budget based on matching transactions
+      const updatedBudgets = budgetsData.map((budget: Budget) => {
+        const matchingTransactions = transactionsData.filter(
+          (tx: Transaction) => 
+            tx.category.toLowerCase() === budget.category.toLowerCase() && 
+            tx.InvoiceType === 'outgoing'
+        )
+
+        const spent = matchingTransactions.reduce(
+          (sum: number, tx: Transaction) => sum + Number(tx.amount), 
+          0
+        )
+
+        return {
+          ...budget,
+          spent: spent,
+          transactions: matchingTransactions.length
+        }
+      })
+
+      setBudgets(updatedBudgets)
+      processBudgetData(updatedBudgets)
     } catch (err) {
       console.error("Error details:", err)
       setError(err instanceof Error ? err.message : "An unexpected error occurred")

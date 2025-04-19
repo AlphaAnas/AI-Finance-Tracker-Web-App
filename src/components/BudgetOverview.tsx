@@ -16,11 +16,18 @@ interface User {
 
 interface Budget {
   id: string
-  title: string
-  total: number
+  name: string
+  allocated: number
   spent: number
   category: string
   userId: string
+}
+
+interface Transaction {
+  id: string
+  category: string
+  amount: number
+  InvoiceType: "incoming" | "outgoing"
 }
 
 // Map categories to icons and colors
@@ -28,8 +35,6 @@ const categoryIcons: Record<string, JSX.Element> = {
   Groceries: <FaShoppingCart />,
   Rent: <FaHome />,
   Transport: <FaCar />,
-  Dining: <FaUtensils />,
-  Travel: <FaPlane />,
   Entertainment: <FaGamepad />,
   // Default icon for any other category
   default: <FaShoppingCart />,
@@ -39,8 +44,6 @@ const categoryColors: Record<string, string> = {
   Groceries: "text-blue-500",
   Rent: "text-purple-500",
   Transport: "text-yellow-500",
-  Dining: "text-green-500",
-  Travel: "text-red-500",
   Entertainment: "text-pink-500",
   // Default color for any other category
   default: "text-gray-500",
@@ -58,19 +61,43 @@ export default function BudgetOverview() {
       setIsLoading(true)
       setError(null)
 
-      console.log(`Fetching budgets for user ID: ${userId}`)
-      const response = await fetch(`/api/get-budgets?uid=${userId}`)
+      // Fetch both budgets and transactions
+      const [budgetsResponse, transactionsResponse] = await Promise.all([
+        fetch(`/api/get-budgets?uid=${userId}`),
+        fetch(`/api/get-transactions?uid=${userId}`)
+      ])
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      if (!budgetsResponse.ok || !transactionsResponse.ok) {
+        throw new Error('Failed to fetch data')
       }
 
-      const data = await response.json()
-      setBudgets(data)
+      const budgetsData = await budgetsResponse.json()
+      const transactionsData = await transactionsResponse.json()
 
-      // Process budget data
-      processBudgetData(data)
+      // Calculate spent amounts for each budget based on matching transactions
+      const updatedBudgets = budgetsData.map((budget: Budget) => {
+        const matchingTransactions = transactionsData.filter(
+          (tx: Transaction) => 
+            tx.category.toLowerCase() === budget.category.toLowerCase() && 
+            tx.InvoiceType === 'outgoing'
+        )
+
+        const spent = matchingTransactions.reduce(
+          (sum: number, tx: Transaction) => sum + Number(tx.amount), 
+          0
+        )
+
+        return {
+          ...budget,
+          title: budget.name, // Map name to title for display
+          total: budget.allocated, // Map allocated to total for display
+          spent: spent,
+          transactions: matchingTransactions.length
+        }
+      })
+
+      setBudgets(updatedBudgets)
+      processBudgetData(updatedBudgets)
     } catch (err) {
       console.error("Error details:", err)
       setError(err instanceof Error ? err.message : "An unexpected error occurred")
@@ -87,33 +114,33 @@ export default function BudgetOverview() {
     }
 
     const processed = budgets.map((budget) => {
-      const remaining = Math.max(0, budget.total - budget.spent)
+      const remaining = Math.max(0, budget.allocated - budget.spent)
       const category = budget.category || "default"
+      const percentage = Math.round((budget.spent / budget.allocated) * 100)
 
       return {
         ...budget,
         remaining,
         color: categoryColors[category] || categoryColors.default,
         icon: categoryIcons[category] || categoryIcons.default,
+        percentage
       }
     })
 
-    setProcessedBudgets(processed)
+    // Sort by percentage spent (highest to lowest)
+    processed.sort((a, b) => b.percentage - a.percentage)
+    
+    // Take only top 4 budgets for overview
+    setProcessedBudgets(processed.slice(0, 4))
   }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
-        console.log("Redirecting to login")
-        toast.error("Session expired. Please log in again.")
-        setTimeout(() => {
-          toast.dismiss()
-          redirect("/login")
-        }, 1000)
+        console.log("No user logged in")
         return
       }
 
-      // Set user and fetch budgets within the same callback
       setUser(currentUser)
       fetchBudgets(currentUser.uid)
     })
