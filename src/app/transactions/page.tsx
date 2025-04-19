@@ -361,8 +361,8 @@ export default function TransactionsPage() {
                       <div className="space-y-2">
                         <Label htmlFor="amount" className="text-gray-800">Amount</Label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                          <Input id="amount" name="amount" type="number" className="pl-7 bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" placeholder="0.00" required />
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rs.</span>
+                          <Input id="amount" name="amount" type="number" className="pl-12 bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" placeholder="0.00" required />
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -470,8 +470,8 @@ export default function TransactionsPage() {
                             <div className="space-y-2">
                               <Label htmlFor="amount" className="text-gray-800">Amount</Label>
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                                <Input id="amount" name="amount" type="number" className="pl-7 bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={extractedData.TotalAmount || ''} required />
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rs.</span>
+                                <Input id="amount" name="amount" type="number" className="pl-12 bg-white text-gray-800 border border-gray-300 rounded-md focus:ring-indigo-500" defaultValue={extractedData.TotalAmount || ''} required />
                               </div>
                             </div>
                             <div className="space-y-2">
@@ -540,7 +540,7 @@ export default function TransactionsPage() {
                                 {extractedData.Items.map((item: any, index: number) => (
                                   <div key={index} className="flex justify-between items-center text-sm">
                                     <span>{item.ItemName}</span>
-                                    <span>${item.Price.toFixed(2)} x {item.Quantity}</span>
+                                    <span>Rs. {item.Price.toFixed(2)} x {item.Quantity}</span>
                                   </div>
                                 ))}
                               </div>
@@ -676,7 +676,7 @@ export default function TransactionsPage() {
                     <td className={`px-8 py-5 whitespace-nowrap text-sm font-medium text-right ${
                       transaction.InvoiceType === 'incoming' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.InvoiceType === 'incoming' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                      {transaction.InvoiceType === 'incoming' ? '+' : '-'}Rs. {transaction.amount.toFixed(2)}
                     </td>
                   </tr>
                 ))
