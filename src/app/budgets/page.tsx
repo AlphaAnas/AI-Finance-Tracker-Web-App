@@ -489,83 +489,85 @@ export default function BudgetsPage() {
       </div>
 
       {/* Add Budget Dialog */}
-      <Dialog open={isAddBudgetOpen} onOpenChange={setIsAddBudgetOpen}>
-        <DialogContent className="bg-white rounded-lg shadow-xl max-w-md mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">Create new budget</DialogTitle>
-            <DialogDescription className="text-gray-500">
-              Set up a new budget category to track your spending.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Budget Name
-              </Label>
-              <Input
-                id="name"
-                placeholder="e.g., Groceries, Rent, etc."
-                value={newBudgetName}
-                onChange={(e) => setNewBudgetName(e.target.value)}
-                className="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
-                Allocated Amount
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rs.</span>
-                <Input
-                  id="amount"
-                  type="number"
-                  className="pl-12 w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
-                  placeholder="0.00"
-                  value={newBudgetAmount}
-                  onChange={(e) => setNewBudgetAmount(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                Category
-              </Label>
-              <Select value={newBudgetCategory} onValueChange={setNewBudgetCategory}>
-                <SelectTrigger
-                  id="category"
-                  className="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
-                >
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Groceries">Groceries</SelectItem>
-                  <SelectItem value="Rent">Rent</SelectItem>
-                  <SelectItem value="Transport">Transport</SelectItem>
-                  <SelectItem value="Entertainment">Entertainment</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddBudgetOpen(false)}
-              className="border-gray-200 hover:bg-gray-50 text-gray-700"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddBudget}
-              disabled={isSubmitting}
-              className="bg-[#4F46E5] text-white hover:bg-[#4338CA]"
-            >
-              {isSubmitting ? "Creating..." : "Create Budget"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+{/* Improved Add Budget Dialog */}
+<Dialog open={isAddBudgetOpen} onOpenChange={setIsAddBudgetOpen}>
+  <DialogContent className="bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
+    <DialogHeader className="mb-4">
+      <DialogTitle className="text-2xl font-bold text-gray-900">Create new budget</DialogTitle>
+      <DialogDescription className="text-gray-700 mt-2 text-base">
+        Set up a new budget category to track your spending.
+      </DialogDescription>
+    </DialogHeader>
+    <div className="space-y-5 py-2">
+      <div className="space-y-2">
+        <Label htmlFor="name" className="text-sm font-semibold text-gray-800 block">
+          Budget Name
+        </Label>
+        <Input
+          id="name"
+          placeholder="e.g., Groceries, Rent, etc."
+          value={newBudgetName}
+          onChange={(e) => setNewBudgetName(e.target.value)}
+          className="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="amount" className="text-sm font-semibold text-gray-800 block">
+          Allocated Amount
+        </Label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700">Rs.</span>
+          <Input
+            id="amount"
+            type="number"
+            className="pl-12 w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+            placeholder="0.00"
+            value={newBudgetAmount}
+            onChange={(e) => setNewBudgetAmount(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="category" className="text-sm font-semibold text-gray-800 block">
+          Category
+        </Label>
+        <Select value={newBudgetCategory} onValueChange={setNewBudgetCategory}>
+          <SelectTrigger
+            id="category"
+            className="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent h-10 bg-white text-gray-800"
+          >
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-gray-300 text-gray-800">
+            <SelectItem value="Groceries" className="text-gray-800">Groceries</SelectItem>
+            <SelectItem value="Rent" className="text-gray-800">Rent</SelectItem>
+            <SelectItem value="Transport" className="text-gray-800">Transport</SelectItem>
+            <SelectItem value="Entertainment" className="text-gray-800">Entertainment</SelectItem>
+            <SelectItem value="Other" className="text-gray-800">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+    <DialogFooter className="mt-6 flex gap-3">
+      <Button
+        variant="outline"
+        onClick={() => setIsAddBudgetOpen(false)}
+        className="border-gray-300 bg-white hover:bg-gray-50 text-gray-800 flex-1 font-medium"
+        disabled={isSubmitting}
+      >
+        Cancel
+      </Button>
+      <Button
+        onClick={handleAddBudget}
+        disabled={isSubmitting}
+        className="bg-[#4F46E5] text-white hover:bg-[#4338CA] flex-1 font-medium"
+      >
+        {isSubmitting ? "Creating..." : "Create Budget"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
   )
 }
