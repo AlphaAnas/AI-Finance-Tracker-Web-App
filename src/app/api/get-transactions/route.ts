@@ -50,16 +50,23 @@ export async function GET(request: Request) {
           id: `TRX-${data.InvoiceNumber || Math.floor(Math.random() * 10000)}`,
           account: data.account || "Default Account",
           date: data.InvoiceDate || data.date ||'No Invoice Date Found!',
-          InvoiceType: data.InvoiceType || 'outgoing',
+
+
+          InvoiceType: data.InvoiceType || data.status || 'outgoing',
+          invoiceType: data.InvoiceType || data.status || 'outgoing', // this is the type of invoice (incoming or outgoing)
+
+
           amount: data.TotalAmount || data.amount || 0,
-          vendorName: data.VendorName || "Uncategorized",
-          category: data.Category || "Uncategorized",
-          description: data.Items?.map((item: any) => item.ItemName).join(', ') || "No items",
+
+
+          vendorName: data.VendorName || data.vendor || "Unknown Vendor",
           vendor: data.VendorName || data.vendor || "Unknown Vendor",
-          invoiceType: data.InvoiceType, // this is the type of invoice (incoming or outgoing)
+
+
+          category: data.Category || data.category ||"Uncategorized",
+          description: data.Items?.map((item: any) => item.ItemName).join(', ') || "No items",
           gstAmount: data.GSTAmount,
-          items: data.Items || [],
-          status: data.status || "outgoing",
+          items: data.Items || data.description ||  [],
           createdAt: data.createdAt || new Date().toISOString(), // Default to current timestamp
         };
       })

@@ -5,8 +5,8 @@ const menuItems = [
   { name: "Dashboard", icon: <FaTachometerAlt />, path: "/dashboard" },
   { name: "Transactions", icon: <FaExchangeAlt />, path: "/transactions" },
   { name: "Budgets", icon: <FaWallet />, path: "/budgets" },
-  { name: "Reports", icon: <FaChartBar />, path: "/reports" },
   { name: "Settings", icon: <FaCog />, path: "/settings" },
+  // { name: "Reports", icon: <FaChartBar />, path: "/reports" },
 ];
 
 export default function Sidebar() {
