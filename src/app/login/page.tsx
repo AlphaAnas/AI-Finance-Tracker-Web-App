@@ -25,6 +25,7 @@ import Image from 'next/image';
 import { getDoc, doc, setDoc } from 'firebase/firestore';
 import { UserData } from '@/app/api/profile/userDataService';
 import { db } from '@/app/firebase';
+import axios from 'axios';
 
 // Animation variants
 const fadeIn = (direction: "up" | "down" | "left" | "right" = "up", delay: number = 0) => {
@@ -54,6 +55,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [emailValidation, setEmailValidation] = useState({ isValid: false, message: '', checking: false });
   const router = useRouter();
 
   // Reset any error when email or password changes
@@ -285,30 +288,63 @@ export default function LoginPage() {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      toast.error("Please enter your registered email");
+      toast.error("Please enter your email");
       return;
     }
     if (!isValidEmail(email)) {
-      setEmailError('Please enter a valid email address');
-      toast.error('Please enter a valid email address');
+      setEmailError('Please enter a valid email');
+      toast.error('Please enter a valid email');
       return;
     }
     
     setLoading(true);
     try {
+      const isValid = await validateEmail(email);
+      if (!isValid) {
+        setLoading(false);
+        return;
+      }
+
       await sendPasswordResetEmail(auth, email);
+      setResetEmailSent(true);
       toast.success("Password reset link sent to your email");
       setResetMode(false); // Return to login mode after successful reset request
     } catch (error) {
       const authError = error as AuthError;
       console.error("Password reset error:", authError);
       if (authError.code === 'auth/user-not-found') {
-        toast.error("No account found with this email address");
+        toast.error("Please enter a valid email");
       } else {
         toast.error("Failed to send reset link. Please try again.");
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const validateEmail = async (email: string) => {
+    if (!email) return false;
+    
+    try {
+      // First check if email format is valid
+      const validationResponse = await axios.post('/api/validate-email', { email });
+      if (!validationResponse.data.isValid) {
+        toast.error(validationResponse.data.message);
+        return false;
+      }
+
+      // Then check if email exists in our system
+      const existsResponse = await axios.post('/api/check-email-exists', { email });
+      if (!existsResponse.data.exists) {
+        toast.error(existsResponse.data.message);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Email validation error:', error);
+      toast.error('Error validating email');
+      return false;
     }
   };
 
