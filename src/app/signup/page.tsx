@@ -217,7 +217,11 @@ export default function Signup() {
       
       try {
         const response = await axios.post('/api/validate-email', { email });
-        setEmailValidation({ ...response.data, checking: false });
+        setEmailValidation({ 
+          ...response.data, 
+          checking: false,
+          message: response.data.message
+        });
       } catch (error) {
         console.error('Email validation error:', error);
         // Fall back to basic validation
@@ -226,7 +230,7 @@ export default function Signup() {
         
         setEmailValidation({ 
           isValid, 
-          message: isValid ? 'Email format looks valid (validation service unavailable)' : 'Invalid email format',
+          message: isValid ? 'Valid Email' : 'Please enter a valid email.',
           checking: false
         });
       }
