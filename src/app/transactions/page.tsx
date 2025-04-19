@@ -155,6 +155,9 @@ export default function TransactionsPage() {
         : [...prev, id]
     );
   };
+ 
+
+
   const saveTransaction = async (transaction: Transaction) => {
     if (!user) {
       toast.error('Please log in to save transactions');
@@ -163,27 +166,34 @@ export default function TransactionsPage() {
   
     try {
       setIsSubmitting(true);
-      console.log('Transaction being saved:', transaction); // Log the transaction data
+  
+      // Determine next ID by finding max numeric ID from existing transactions
+      const numericIds = transactions
+        .map(t => parseInt(t.id))
+        .filter(n => !isNaN(n));
+  
+      const nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+  
+      const transactionWithId = {
+        ...transaction,
+        id: nextId.toString(), // Set the new ID here as a string
+      };
+  
+      console.log('Transaction being saved:', transactionWithId);
   
       const response = await fetch('/api/save-transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.uid, transaction }),
+        body: JSON.stringify({ userId: user.uid, transaction: transactionWithId }),
       });
-  
-      console.log('API Response:', response);
   
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API Error:', errorData);
         throw new Error(errorData.error || 'Failed to save transaction');
       }
   
-      const { id } = await response.json();
-      console.log('Saved transaction ID:', id);
-  
       toast.success('Transaction added successfully!');
-      setTransactions(prev => [...prev, { ...transaction, id }]);
+      setTransactions(prev => [...prev, transactionWithId]);
     } catch (error) {
       console.error('Error saving transaction:', error);
       toast.error('Failed to save transaction');
@@ -191,22 +201,27 @@ export default function TransactionsPage() {
       setIsSubmitting(false);
     }
   };
+  
+
+
+
+
   const handleManualSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
   
     const formData = new FormData(e.currentTarget);
     const transaction: Transaction = {
-      id: '', // Will be set by the backend
+      id: `TRX-${Math.floor(Math.random() * 10000)}`,
       userid: user?.uid || '',
       account: formData.get('account') as string,
-      date: formData.get('date') as string,
-      status: formData.get('type') as 'incoming' | 'outgoing',
-      amount: parseFloat(formData.get('amount') as string) || 0, // Ensure amount is a valid number
+      date: formData.get('date') as string,  // Changed from 'InvoiceDate' to 'date'
+      status: formData.get('type') as 'incoming' | 'outgoing',  // Changed from 'InvoiceType' to 'type'
+      amount: parseFloat(formData.get('amount') as string) || 0,  // Changed from 'TotalAmount' to 'amount'
       category: formData.get('category') as string,
-      description: formData.get('description') as string,
-      vendor: formData.get('vendor') as string,
+      description: formData.get('description') as string,  // Changed from 'Items' to 'description'
+      vendor: formData.get('vendor') as string,  // Make sure this field name exists in the form
     };
-  
+    
     console.log('Transaction to save:', transaction); // Log the transaction data
   
     await saveTransaction(transaction);
@@ -270,6 +285,7 @@ export default function TransactionsPage() {
   const processReceipt = async (file: File) => {
     if (!user) {
       toast.error('Please log in to process receipts');
+      redirect("/login");
       return;
     }
 
@@ -297,7 +313,7 @@ export default function TransactionsPage() {
       if (result.data) {
         const amountInput = document.getElementById('amount') as HTMLInputElement;
         if (amountInput && result.data.TotalAmount) {
-          amountInput.value = result.data.TotalAmount.toString();
+          amountInput.value = result.data.TotalAmount.toString();  // this line is is basically setting the value of the input field to the extracted amount
         }
       }
     } catch (error) {
@@ -624,10 +640,14 @@ export default function TransactionsPage() {
                   </td>
                 </tr>
               ) : (
-                currentTransactions.map(transaction => (
+                currentTransactions.map((transaction, index) => (
                   <tr key={transaction.id} className="hover:bg-[oklch(0.961_0.01_0)]">
                     <td className="px-6 py-5 whitespace-nowrap">
-                      <span className="font-medium text-gray-900">{transaction.id}</span>
+                      <span className="font-medium text-gray-900">
+                        {/* {transaction.id} */}
+                        {`TRX-${index + 1}`}
+                        
+                        </span>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-800">
                       {transaction.account}
