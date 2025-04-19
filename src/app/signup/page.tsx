@@ -12,7 +12,7 @@ import { LampContainer } from '@/components/ui/lamp';
 import Link from 'next/link';
 import { UserData } from '../api/profile/userDataService';
 import axios from 'axios';
-
+//singup page
 const fadeIn = (direction = "up", delay = 0) => {
   return {
     hidden: {
