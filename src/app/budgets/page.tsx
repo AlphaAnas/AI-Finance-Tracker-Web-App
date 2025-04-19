@@ -384,7 +384,7 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Total Budget</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">${totalAllocated.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">Rs.{totalAllocated.toLocaleString()}</p>
             </div>
 
             <div className="bg-purple-50 rounded-lg p-4">
@@ -394,7 +394,7 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Total Spent</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">${totalSpent.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">Rs.{totalSpent.toLocaleString()}</p>
             </div>
 
             <div className="bg-green-50 rounded-lg p-4">
@@ -404,7 +404,7 @@ export default function BudgetsPage() {
                 </div>
                 <span className="text-gray-600">Remaining</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">${totalRemaining.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">Rs.{totalRemaining.toLocaleString()}</p>
             </div>
           </div>
 
@@ -417,8 +417,8 @@ export default function BudgetsPage() {
               <div className="h-full bg-[#6366F1]" style={{ width: `${percentSpent}%` }}></div>
             </div>
             <div className="flex justify-between text-xs text-gray-500">
-              <span>$0</span>
-              <span>${totalAllocated.toLocaleString()}</span>
+              <span>Rs.0</span>
+              <span>Rs.{totalAllocated.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -449,8 +449,8 @@ export default function BudgetsPage() {
 
                   <div className="space-y-3">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${budget.spent.toLocaleString()}</span>
-                      <span className="text-sm text-gray-500">of ${budget.allocated.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-gray-900">Rs.{budget.spent.toLocaleString()}</span>
+                      <span className="text-sm text-gray-500">of Rs.{budget.allocated.toLocaleString()}</span>
                     </div>
 
                     <div className="space-y-2">
@@ -460,7 +460,7 @@ export default function BudgetsPage() {
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500">{percentage}% spent</span>
                         <span className={budget.left > 0 ? "text-emerald-500 font-medium" : "text-red-500 font-medium"}>
-                          {budget.left > 0 ? `$${budget.left.toLocaleString()} left` : "Budget depleted"}
+                          {budget.left > 0 ? `Rs.${budget.left.toLocaleString()} left` : "Budget depleted"}
                         </span>
                       </div>
                     </div>
@@ -515,11 +515,11 @@ export default function BudgetsPage() {
                 Allocated Amount
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rs.</span>
                 <Input
                   id="amount"
                   type="number"
-                  className="pl-7 w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                  className="pl-12 w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
                   placeholder="0.00"
                   value={newBudgetAmount}
                   onChange={(e) => setNewBudgetAmount(e.target.value)}

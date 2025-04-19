@@ -202,7 +202,7 @@ export default function BudgetOverview() {
                   <h3 className="text-md font-medium text-gray-800">{budget.title}</h3>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-600">${budget.spent.toFixed(2)} spent</p>
+                  <p className="text-sm text-gray-600">Rs.{budget.spent.toFixed(2)} spent</p>
                   <div className="relative w-32 h-2 bg-gray-300 rounded-full mt-1">
                     <div
                       className={`absolute h-2 rounded-full bg-opacity-70`}
@@ -213,7 +213,7 @@ export default function BudgetOverview() {
                     ></div>
                   </div>
                   <p className={`text-xs ${percentage >= 100 ? "text-red-500" : "text-green-500"}`}>
-                    ${budget.remaining.toFixed(2)} left
+                    Rs.{budget.remaining.toFixed(2)} left
                   </p>
                 </div>
               </div>
