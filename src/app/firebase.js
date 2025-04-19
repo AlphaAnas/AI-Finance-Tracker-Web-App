@@ -38,17 +38,27 @@ googleProvider.setCustomParameters({
   access_type: 'offline'
 });
 
-// Configure Facebook Provider
+// Configure Facebook Provider with enhanced error handling
 const facebookProvider = new FacebookAuthProvider();
-facebookProvider.setCustomParameters({
-  'display': 'popup',
-  'auth_type': 'reauthenticate',
-  'return_scopes': 'true'
-});
+try {
+  facebookProvider.setCustomParameters({
+    'display': 'popup',
+    'auth_type': 'rerequest', // Changed from reauthenticate to rerequest for better UX
+    'return_scopes': 'true'
+  });
 
-// Add required scopes
-facebookProvider.addScope('email');
-facebookProvider.addScope('public_profile');
+  // Add required scopes with error handling
+  const requiredScopes = ['email', 'public_profile'];
+  requiredScopes.forEach(scope => {
+    try {
+      facebookProvider.addScope(scope);
+    } catch (error) {
+      console.error(`Failed to add scope ${scope}:`, error);
+    }
+  });
+} catch (error) {
+  console.error("Error configuring Facebook provider:", error);
+}
 
 // Configure auth persistence
 auth.useDeviceLanguage();
