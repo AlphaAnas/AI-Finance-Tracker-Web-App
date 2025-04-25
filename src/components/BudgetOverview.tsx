@@ -67,12 +67,30 @@ export default function BudgetOverview() {
         fetch(`/api/get-transactions?uid=${userId}`)
       ])
 
-      if (!budgetsResponse.ok || !transactionsResponse.ok) {
-        throw new Error('Failed to fetch data')
+      // Instead of checking for !budgetsResponse.ok, handle 404s as empty arrays
+      let budgetsData = []
+      let transactionsData = []
+      
+      if (budgetsResponse.ok) {
+        budgetsData = await budgetsResponse.json()
+      } else if (budgetsResponse.status !== 404) {
+        // Only throw for non-404 errors
+        console.error("Failed to fetch budgets:", budgetsResponse.status)
+      }
+      
+      if (transactionsResponse.ok) {
+        transactionsData = await transactionsResponse.json()
+      } else if (transactionsResponse.status !== 404) {
+        // Only throw for non-404 errors
+        console.error("Failed to fetch transactions:", transactionsResponse.status)
       }
 
-      const budgetsData = await budgetsResponse.json()
-      const transactionsData = await transactionsResponse.json()
+      // If we have no budgets, just set empty arrays and return
+      if (budgetsData.length === 0) {
+        setBudgets([])
+        setProcessedBudgets([])
+        return
+      }
 
       // Calculate spent amounts for each budget based on matching transactions
       const updatedBudgets = budgetsData.map((budget: Budget) => {

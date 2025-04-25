@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { collection, getDocs } from 'firebase/firestore';
 import { query, where } from 'firebase/firestore';
-import { db } from 'src/app/firebase'; // adjust this path based on your structure
+import { db } from '@/app/firebase'; // fixed import path
 
 
 
@@ -30,8 +30,8 @@ export async function GET(request: Request) {
 
 
     if (snapshot.empty) {
-      process.stdout.write(`[${new Date().toISOString()}] API ERROR: No transactions found for user ID: ${uid}\n`);
-      return NextResponse.json({ error: 'No transactions found' }, { status: 404 });
+      process.stdout.write(`[${new Date().toISOString()}] API: No transactions found for user ID: ${uid}, returning empty array\n`);
+      return NextResponse.json([]);  // Return empty array instead of error
     }
 
     process.stdout.write(`[${new Date().toISOString()}] API: Processing transaction documents...\n`);
