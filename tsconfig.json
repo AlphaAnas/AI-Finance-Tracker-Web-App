@@ -16,7 +16,7 @@
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "paths": {
@@ -28,14 +28,18 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "types": ["node", "jest", "@testing-library/jest-dom"]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
-, "src/app/dashboard"  ],
+    ".next/types/**/*.ts",
+    "src/setupTests.ts",
+    "src/types/*.d.ts",
+    "src/app/dashboard"
+  ],
   "exclude": [
     "node_modules"
   ]

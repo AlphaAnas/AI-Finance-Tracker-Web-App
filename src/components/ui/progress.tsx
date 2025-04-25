@@ -20,6 +20,8 @@ const Progress = React.forwardRef<
       "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
       className
     )}
+    value={value} // Pass value to Radix component
+    aria-valuenow={typeof value === 'number' ? value : undefined} // Ensure aria-valuenow is only set when value is a valid number
     {...props}
   >
     <ProgressPrimitive.Indicator
